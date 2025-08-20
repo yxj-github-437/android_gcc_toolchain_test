@@ -3,5 +3,18 @@ name: android gcc builds
 on: [push]
 
 jobs:
-  build:
+  prepare_ndk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r28c
+          add-to-path: true
+          local-cache: true
+      - run: ln -sf ${{ steps.setup-ndk.outputs.ndk-path }} /opt/ndk
+      - run: ls -la /opt/ndk/
+
+
+
+
 
