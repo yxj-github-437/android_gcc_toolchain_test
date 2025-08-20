@@ -9,6 +9,14 @@ jobs:
   prepare_ndk:
     runs-on: ubuntu-latest
     steps:
+      - name: cache ndk
+        uses: actions/cache@v4
+        id: ndk-cache
+        with:
+          path: /opt/ndk
+          key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
+          restore-keys: ${{ runner.os }}-ndk-
+
       - name: download ndk
         run: |
             if [ ! -d "/opt/ndk/" ]; then
@@ -18,13 +26,7 @@ jobs:
               mv /opt/android-ndk-r$NDK_VERSION /opt/ndk
               echo "ANDROID_NDK_HOME=/opt/ndk" >> $GITHUB_ENV
             fi
-
-      - name: cache ndk
-        uses: actions/cache@v4
-        id: ndk-cache
-        with:
-          path: /opt/ndk
-          key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
+        if: steps.ndk-cache.outputs.cache-hit != 'true'
 
   test_ndk:
     runs-on: ubuntu-latest
@@ -34,6 +36,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /opt/ndk/
+          key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
           restore-keys: ${{ runner.os }}-ndk-
 
       - name: check clang
