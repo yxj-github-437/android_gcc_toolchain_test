@@ -68,6 +68,9 @@ jobs:
         run: echo "build-output-dir=${{ github.workspace }}/libandroid-extra-build" >> "$GITHUB_OUTPUT"
 
       - name : configure cmake
+        env:
+          CFLAGS: -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__=1
+          CXXFLAGS: -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__=1
         run: >
           cmake -S libandroid-extra-src
           -B ${{ steps.strings.outputs.build-output-dir }}
