@@ -4,7 +4,6 @@ on: [push]
 
 env:
   NDK_VERSION: 28c
-  CACHE_KEY: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
 
 jobs:
   prepare_ndk:
@@ -25,7 +24,8 @@ jobs:
         id: ndk-cache
         with:
           path: /opt/ndk
-          key: ${{ env.CACHE_KEY }}
+          key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
+          restore-keys: ${{ runner.os }}-ndk-
 
   test_ndk:
     runs-on: ubuntu-latest
@@ -35,7 +35,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /opt/ndk/
-          key: ${{ env.CACHE_KEY }}
+          key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
 
       - name: check clang
         run: |
