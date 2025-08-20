@@ -65,8 +65,7 @@ jobs:
           -DANDROID_PLATFORM=android-21
           -DANDROID_ABI=${{ matrix.target_abi }}
           --toolchain /opt/ndk/build/cmake/android.toolchain.cmake
-          -DCMAKE_C_FLAGS="-D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__=1"
-          -DCMAKE_CXX_FLAGS="-D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__=1"
+          -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__=1
           -GNinja
 
       - name: build
