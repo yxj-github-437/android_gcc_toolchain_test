@@ -5,14 +5,34 @@ on: [push]
 jobs:
   prepare_ndk:
     runs-on: ubuntu-latest
+    env:
+      NDK: android-ndk-r28c
     steps:
-      - uses: nttld/setup-ndk@v1
+      - name: download ndk
+        run: |
+            if [ ! -d "/opt/$NDK" ]; then
+              # 下载NDK
+              wget https://dl.google.com/android/repository/$NDK-linux-x86_64.zip
+              unzip $NDK-linux-x86_64.zip -d /opt/
+              echo "NDK_VERSION=$NDK" >> $GITHUB_ENV
+              echo "ANDROID_NDK_HOME=/opt/$NDK" >> $GITHUB_ENV
+            endif
+
+      - name: cache NDK
+        uses: actions/cache@v2
         with:
-          ndk-version: r28c
-          add-to-path: false
-      - run: ls -la $ANDROID_NDK_HOME
-        env:
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          path: /opt/$NDK
+          key: ${{ runner.os }}-ndk-${{ hashFiles('**/source.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-ndk-
+
+  test_ndk:
+    runs-on: ubuntu-latest
+    needs: prepare_ndk
+    steps:
+      - name: check clang
+        run: |
+          /opt/$NDK_VERSION/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ -v
 
 
 
