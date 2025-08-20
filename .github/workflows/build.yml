@@ -12,8 +12,8 @@ jobs:
         run: |
             if [ ! -d "/opt/$NDK" ]; then
               # 下载NDK
-              wget https://dl.google.com/android/repository/$NDK-linux-x86_64.zip
-              unzip $NDK-linux-x86_64.zip -d /opt/
+              wget https://dl.google.com/android/repository/$NDK-linux.zip
+              unzip $NDK-linux.zip -d /opt/
               echo "NDK_VERSION=$NDK" >> $GITHUB_ENV
               echo "ANDROID_NDK_HOME=/opt/$NDK" >> $GITHUB_ENV
             fi
