@@ -6,22 +6,22 @@ jobs:
   prepare_ndk:
     runs-on: ubuntu-latest
     env:
-      NDK: android-ndk-r28c
+      NDK_VERSION: android-ndk-r28c
     steps:
       - name: download ndk
         run: |
-            if [ ! -d "/opt/$NDK" ]; then
+            if [ ! -d "/opt/ndk/" ]; then
               # 下载NDK
-              wget https://dl.google.com/android/repository/$NDK-linux.zip
-              unzip $NDK-linux.zip -d /opt/
-              echo "NDK_VERSION=$NDK" >> $GITHUB_ENV
-              echo "ANDROID_NDK_HOME=/opt/$NDK" >> $GITHUB_ENV
+              wget https://dl.google.com/android/repository/android-ndk-r$NDK_VERSION-linux.zip
+              unzip android-ndk-r$NDK_VERSION-linux.zip -d /opt/
+              mv /opt/android-ndk-r$NDK_VERSION /opt/ndk
+              echo "ANDROID_NDK_HOME=/opt/ndk" >> $GITHUB_ENV
             fi
 
       - name: cache NDK
         uses: actions/cache@v4
         with:
-          path: /opt/$NDK
+          path: /opt/ndk/
           key: ${{ runner.os }}-ndk-${{ hashFiles('**/source.properties') }}
           restore-keys: |
             ${{ runner.os }}-ndk-
@@ -32,7 +32,7 @@ jobs:
     steps:
       - name: check clang
         run: |
-          /opt/$NDK_VERSION/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ -v
+          /opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ -v
 
 
 
