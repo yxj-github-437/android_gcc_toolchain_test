@@ -60,16 +60,17 @@ jobs:
 
       - name: clone libandroid-extra
         run: |
-          git clone https://github.com/yxj-github-437/libandroid-extra.git
+          git clone https://github.com/yxj-github-437/libandroid-extra.git libandroid-extra-src
       
       - name: set build dir
         id: strings
         shell: bash
-        run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        run: echo "build-output-dir=${{ github.workspace }}/libandroid-extra-build" >> "$GITHUB_OUTPUT"
 
       - name : configure cmake
         run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          cmake -S libandroid-extra-src
+          -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DANDROID_PLATFORM=android-21
           -DANDROID_ABI=${{ matrix.target_abi }}
