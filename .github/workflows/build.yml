@@ -28,16 +28,6 @@ jobs:
             fi
         if: steps.ndk-cache.outputs.cache-hit != 'true'
 
-  test_ndk:
-    runs-on: ubuntu-latest
-    needs: prepare_ndk
-    steps:
-      - name: restore ndk
-        uses: actions/cache@v4
-        with:
-          path: /opt/ndk/
-          key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
-
       - name: check clang
         run: |
           /opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ -v
@@ -50,7 +40,7 @@ jobs:
         build_type: [RelWithDebInfo]
         target_abi: [arm64-v8a, armeabi-v7a, x86_64, x86]
     runs-on: ubuntu-latest
-    needs: [prepare_ndk, test_ndk]
+    needs: [prepare_ndk]
     steps:
       - name: restore ndk
         uses: actions/cache@v4
@@ -68,9 +58,6 @@ jobs:
         run: echo "build-output-dir=${{ github.workspace }}/libandroid-extra-build" >> "$GITHUB_OUTPUT"
 
       - name : configure cmake
-        env:
-          CFLAGS: -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__=1
-          CXXFLAGS: -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__=1
         run: >
           cmake -S libandroid-extra-src
           -B ${{ steps.strings.outputs.build-output-dir }}
@@ -78,6 +65,8 @@ jobs:
           -DANDROID_PLATFORM=android-21
           -DANDROID_ABI=${{ matrix.target_abi }}
           --toolchain /opt/ndk/build/cmake/android.toolchain.cmake
+          -DCMAKE_C_FLAGS="-D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__=1"
+          -DCMAKE_CXX_FLAGS="-D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__=1"
           -GNinja
 
       - name: build
