@@ -37,13 +37,47 @@ jobs:
         with:
           path: /opt/ndk/
           key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
-          restore-keys: ${{ runner.os }}-ndk-
 
       - name: check clang
         run: |
           /opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++ -v
 
 
+  build_android_extra:
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [RelWithDebInfo]
+        target_abi: [arm64-v8a, armeabi-v7a, x86_64, x86]
+    runs-on: ubuntu-latest
+    needs: [prepare_ndk, test_ndk]
+    steps:
+      - name: restore ndk
+        uses: actions/cache@v4
+        with:
+          path: /opt/ndk
+          key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
+
+      - name: clone libandroid-extra
+        run: |
+          git clone https://github.com/yxj-github-437/libandroid-extra.git
+      
+      - name: set build dir
+        id: strings
+        shell: bash
+        run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name : configure cmake
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DANDROID_PLATFORM=android-21
+          -DANDROID_ABI=${{ matrix.target_abi }}
+          --toolchain /opt/ndk/build/cmake/android.toolchain.cmake
+          -GNinja
+
+      - name: build
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
 
 
