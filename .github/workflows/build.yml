@@ -9,10 +9,10 @@ jobs:
       - uses: nttld/setup-ndk@v1
         with:
           ndk-version: r28c
-          add-to-path: true
-          local-cache: true
-      - run: ln -sf ${{ steps.setup-ndk.outputs.ndk-path }} /opt/ndk
-      - run: ls -la /opt/ndk/
+          add-to-path: false
+      - run: ls -la $ANDROID_NDK_HOME
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
 
 
 
