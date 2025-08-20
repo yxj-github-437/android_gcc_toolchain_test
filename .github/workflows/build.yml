@@ -12,8 +12,8 @@ jobs:
         run: |
             if [ ! -d "/opt/ndk/" ]; then
               # 下载NDK
-              wget https://dl.google.com/android/repository/android-ndk-r$NDK_VERSION-linux.zip
-              unzip android-ndk-r$NDK_VERSION-linux.zip -d /opt/
+              wget -q https://dl.google.com/android/repository/android-ndk-r$NDK_VERSION-linux.zip
+              unzip -q android-ndk-r$NDK_VERSION-linux.zip -d /opt/
               mv /opt/android-ndk-r$NDK_VERSION /opt/ndk
               echo "ANDROID_NDK_HOME=/opt/ndk" >> $GITHUB_ENV
             fi
