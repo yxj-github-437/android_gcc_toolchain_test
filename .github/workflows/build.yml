@@ -1,0 +1,7 @@
+name: android gcc builds
+
+on: [push]
+
+jobs:
+  build:
+
