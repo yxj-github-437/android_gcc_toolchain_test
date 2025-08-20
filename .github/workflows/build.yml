@@ -6,7 +6,7 @@ jobs:
   prepare_ndk:
     runs-on: ubuntu-latest
     env:
-      NDK_VERSION: android-ndk-r28c
+      NDK_VERSION: 28c
     steps:
       - name: download ndk
         run: |
