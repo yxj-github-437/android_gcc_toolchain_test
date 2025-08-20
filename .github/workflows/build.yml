@@ -16,7 +16,7 @@ jobs:
               unzip $NDK-linux-x86_64.zip -d /opt/
               echo "NDK_VERSION=$NDK" >> $GITHUB_ENV
               echo "ANDROID_NDK_HOME=/opt/$NDK" >> $GITHUB_ENV
-            endif
+            fi
 
       - name: cache NDK
         uses: actions/cache@v4
