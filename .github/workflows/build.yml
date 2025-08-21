@@ -67,10 +67,17 @@ jobs:
           -DANDROID_ABI=${{ matrix.target_abi }}
           -DANDROID_ARM_MODE=arm
           --toolchain /opt/ndk/build/cmake/android.toolchain.cmake
+          --install-prefix /opt/android-build/
           -GNinja
 
       - name: build
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+      - name: install
+        run: cmake --install ${{ steps.strings.outputs.build-output-dir }}
+
+      - name: check
+        run: tree /opt/android-build/
 
 
 
