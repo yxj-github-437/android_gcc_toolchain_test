@@ -50,7 +50,7 @@ jobs:
 
       - name: clone libandroid-extra
         run: |
-          git clone https://github.com/yxj-github-437/libandroid-extra.git libandroid-extra-src
+          git clone --branch a57374985fdd505b4c99e66c776e9a0a3fd5ea50 https://github.com/yxj-github-437/libandroid-extra.git libandroid-extra-src
 
       - name: set build dir
         id: strings
