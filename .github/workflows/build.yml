@@ -51,7 +51,7 @@ jobs:
       - name: clone libandroid-extra
         run: |
           git clone https://github.com/yxj-github-437/libandroid-extra.git libandroid-extra-src
-      
+
       - name: set build dir
         id: strings
         shell: bash
@@ -64,7 +64,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DANDROID_PLATFORM=android-21
           -DANDROID_ABI=${{ matrix.target_abi }}
-          -DANDROID_WEAK_API_DEFS=ON
           --toolchain /opt/ndk/build/cmake/android.toolchain.cmake
           -GNinja
 
