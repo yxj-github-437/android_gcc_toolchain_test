@@ -60,7 +60,7 @@ jobs:
         with:
           repository: yxj-github-437/libandroid-extra
           path: libandroid-extra-src
-        run: |
+      - run: |
           cd libandroid-extra-src && git checkout ${{ env.LIBANDROID_COMMIT_ID }}
           cmake -B ${{ github.workspace }}/libandroid-extra-build \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
