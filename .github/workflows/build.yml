@@ -58,8 +58,8 @@ jobs:
       - name: build libandroid-extra
         uses: actions/checkout@v5
         with:
-        repository: yxj-github-437/libandroid-extra
-        path: libandroid-extra-src
+          repository: yxj-github-437/libandroid-extra
+          path: libandroid-extra-src
         run: |
           cd libandroid-extra-src && git checkout ${{ env.LIBANDROID_COMMIT_ID }}
           cmake -B ${{ github.workspace }}/libandroid-extra-build \
