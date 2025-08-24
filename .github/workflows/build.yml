@@ -55,39 +55,21 @@ jobs:
           key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
         if: steps.sysroot-cache.outputs.cache-hit != 'true'
 
-      - name: clone libandroid-extra
+      - name: build libandroid-extra
+        uses: actions/checkout@v5
+        with:
+        repository: yxj-github-437/libandroid-extra
+        path: libandroid-extra-src
         run: |
-          git clone https://github.com/yxj-github-437/libandroid-extra.git libandroid-extra-src
           cd libandroid-extra-src && git checkout ${{ env.LIBANDROID_COMMIT_ID }}
+          cmake -B ${{ github.workspace }}/libandroid-extra-build \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DANDROID_PLATFORM=android-21 -DANDROID_ABI=${{ matrix.target_abi }} \
+            -DANDROID_ARM_MODE=arm \
+            --toolchain /opt/ndk/build/cmake/android.toolchain.cmake \
+            --install-prefix /opt/android-build \
+            -GNinja
+          cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+          cmake --install ${{ steps.strings.outputs.build-output-dir }}
         if: steps.sysroot-cache.outputs.cache-hit != 'true'
-
-      - name: set build dir
-        id: strings
-        shell: bash
-        run: echo "build-output-dir=${{ github.workspace }}/libandroid-extra-build" >> "$GITHUB_OUTPUT"
-        if: steps.sysroot-cache.outputs.cache-hit != 'true'
-
-      - name : configure cmake
-        run: >
-          cmake -S libandroid-extra-src
-          -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DANDROID_PLATFORM=android-21
-          -DANDROID_ABI=${{ matrix.target_abi }}
-          -DANDROID_ARM_MODE=arm
-          --toolchain /opt/ndk/build/cmake/android.toolchain.cmake
-          --install-prefix /opt/android-build/
-          -GNinja
-        if: steps.sysroot-cache.outputs.cache-hit != 'true'
-
-      - name: build
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-        if: steps.sysroot-cache.outputs.cache-hit != 'true'
-
-      - name: install
-        run: cmake --install ${{ steps.strings.outputs.build-output-dir }}
-        if: steps.sysroot-cache.outputs.cache-hit != 'true'
-
-
-
 
