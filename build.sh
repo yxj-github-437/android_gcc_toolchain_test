@@ -7,7 +7,6 @@ JBOS=1
 TARGET=aarch64-linux-android
 HOST=aarch64-linux-android
 
-
 #### handle commands
 while [[ $# > 0 ]]; do
 	case $1 in
@@ -65,12 +64,15 @@ done
 
 cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
 for dir in bfd binutils elfcpp gas ld libctf libsframe opcodes; do
-	ln -sf $BASE_DIR/src/binutils-$BINUTILS_VERSION/$i $BASE_DIR/src/gcc-$GCC_VERSION/$i
+	ln -srf $BASE_DIR/src/binutils-$BINUTILS_VERSION/$dir $BASE_DIR/src/gcc-$GCC_VERSION/$dir
 done
 
 
 
 ## prebuild
+export CC_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang
+export CXX_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang++
+
 mkdir -p $BASE_DIR/prebuild; cd $BASE_DIR/prebuild
 ../src/gcc-$GCC_VERSION/configure --host=x86_64-linux-gnu --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++ --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \

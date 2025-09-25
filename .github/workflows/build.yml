@@ -100,8 +100,6 @@ jobs:
 
       - name: build
         run: |
-          export TARGET_CC=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang
-          export TARGET_CXX=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang++
           ./build.sh --jobs=4 --gcc-version=15.2.0 --target=aarch64-linux-android
 
 
