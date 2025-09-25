@@ -98,7 +98,7 @@ export LD=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
 ../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
-	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/opt/gcc-install --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/opt/android-build/sysroot \
+	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/opt/gcc-install --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/opt/gcc-install/sysroot \
 	--disable-bootstrap
 make -j $JOBS || exit 1
 make install || exit 1

@@ -79,6 +79,30 @@ jobs:
 
 
   build_gcc:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            target: aarch64-linux-android,
+            host: aarch64-linux-android,
+            target_abi: arm64-v8a
+          }
+          - {
+            target: arm-linux-androideabi,
+            host: arm-linux-androideabi,
+            target_abi: armeabi-v7a
+          }
+          - {
+            target: x86_64-linux-android,
+            host: x86_64-linux-android,
+            target_abi: x86_64
+          }
+          - {
+            target: i686-linux-android,
+            host: i686-linux-android,
+            target_abi: x86
+          }
     runs-on: ubuntu-latest
     needs: [prepare_ndk, build_android_extra]
     steps:
@@ -86,8 +110,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /opt/android-build/sysroot
-          key: ${{ runner.os }}-sysroot-${{ matrix.target_abi }}-${{ env.LIBANDROID_COMMIT_ID }}
-          restore-keys: ${{ runner.os }}-sysroot-arm64-v8a-
+          key: ${{ runner.os }}-sysroot-${{ matrix.config.target_abi }}-${{ env.LIBANDROID_COMMIT_ID }}
+          restore-keys: ${{ runner.os }}-sysroot--${{ matrix.config.target_abi }}
 
       - name: restore ndk
         uses: actions/cache@v4
@@ -100,6 +124,6 @@ jobs:
 
       - name: build
         run: |
-          ./build.sh --base-dir=/opt/ --jobs=4 --gcc-version=15.2.0 --target=aarch64-linux-android
+          ./build.sh --base-dir=/opt/ --jobs=1 --gcc-version=15.2.0 --target=${{ matrix.config.target }} --host=${{ matrix.config.host }}
 
 
