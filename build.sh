@@ -1,6 +1,7 @@
 #! /bin/bash
 
 BASE_DIR=$(pwd)
+PROJECT_DIR=$(pwd)
 GCC_VERSION=15.2.0
 BINUTILS_VERSION=2.45
 JBOS=1
@@ -57,11 +58,11 @@ echo "unpack binutils."
 [ -d $BASE_DIR/src/binutils-$BINUTILS_VERSION/ ] || exit 1
 
 
-for i in `find $BASE_DIR/patches/gcc/ -name *.patch -type f`; do
+for i in `find $PROJECT_DIR/patches/gcc/ -name *.patch -type f`; do
 	patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $i || exit 1
 done
 
-for i in `find $BASE_DIR/patches/binutils/ -name *.patch -type f`; do
+for i in `find $PROJECT_DIR/patches/binutils/ -name *.patch -type f`; do
 	patch -d $BASE_DIR/src/binutils-$BINUTILS_VERSION -p1 < $i || exit 1
 done
 
@@ -73,8 +74,6 @@ done
 
 
 ## prebuild
-export CC_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/$TARGET21-clang
-export CXX_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/$TARGET21-clang++
 export AR_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
 export LD_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
 
