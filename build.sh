@@ -10,6 +10,9 @@ HOST=aarch64-linux-android
 #### handle commands
 while [[ $# > 0 ]]; do
 	case $1 in
+		--base-dir=*)
+			BASE_DIR=${1/--base-dir=/}
+		;;
 		--jobs=*)
 			[[ ${1/--jobs=/} == 0 ]] && {
 				echo "jobs value must be greater than 0. termiate" && exit 1
@@ -70,17 +73,30 @@ done
 
 
 ## prebuild
-export CC_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang
-export CXX_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-clang++
+export AR_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
+export LD_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
 
 mkdir -p $BASE_DIR/prebuild; cd $BASE_DIR/prebuild
 ../src/gcc-$GCC_VERSION/configure --host=x86_64-linux-gnu --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++ --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
+	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/opt/gcc-preinstall --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/opt/android-build/sysroot \
+	--disable-bootstrap
+make -j $JOBS || exit 1
+make install || exit 1
+
+
+## build
+export PATH=/opt/preinstall/bin/:$PATH
+export LD=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
+export LD_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
+rm -rf $BASE_DIR/prebuild/
+mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
+../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
+	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
 	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/opt/gcc-install --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/opt/android-build/sysroot \
 	--disable-bootstrap
-make -j $JOBS
-make install
+make -j $JOBS || exit 1
+make install || exit 1
 
-
-find * in /opt/gcc-install/
+find /opt/gcc-install/ -type f
 

@@ -100,6 +100,6 @@ jobs:
 
       - name: build
         run: |
-          ./build.sh --jobs=4 --gcc-version=15.2.0 --target=aarch64-linux-android
+          ./build.sh --base-dir=/opt/ --jobs=4 --gcc-version=15.2.0 --target=aarch64-linux-android
 
 
