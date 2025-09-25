@@ -1,18 +1,17 @@
-From f7307e6693cfaa3f382e604a033eff6cfc18ebfc Mon Sep 17 00:00:00 2001
+From abb13132b41a43d9c5aac2e7625e9a62ba0c6baf Mon Sep 17 00:00:00 2001
 From: yxj-github-437 <2457369732@qq.com>
-Date: Fri, 26 Sep 2025 03:28:06 +0800
+Date: Fri, 26 Sep 2025 04:21:01 +0800
 Subject: [PATCH] avoid hardlink in Android
 
 ---
  gcc/Makefile.in          | 6 +++---
- gcc/cobol/Make-lang.in   | 4 ++--
  gcc/cp/Make-lang.in      | 6 +++---
  gcc/d/Make-lang.in       | 2 +-
  gcc/fortran/Make-lang.in | 2 +-
  gcc/go/Make-lang.in      | 2 +-
  gcc/m2/Make-lang.in      | 2 +-
  gcc/rust/Make-lang.in    | 4 ++--
- 8 files changed, 14 insertions(+), 14 deletions(-)
+ 7 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/gcc/Makefile.in b/gcc/Makefile.in
 index 55b4cd7db..fc943a2b1 100644
@@ -43,21 +42,6 @@ index 55b4cd7db..fc943a2b1 100644
  	    fi ; \
  	  done; \
  	fi
-diff --git a/gcc/cobol/Make-lang.in b/gcc/cobol/Make-lang.in
-index 9b74dd39b..5f1882379 100644
---- a/gcc/cobol/Make-lang.in
-+++ b/gcc/cobol/Make-lang.in
-@@ -285,8 +285,8 @@ cobol.install-common: installdirs
- 	    rm -f $(DESTDIR)$(bindir)/$(GCOBOL_TARGET_INSTALL_NAME)$(exeext); \
- 	    rm -f $(DESTDIR)$(bindir)/$(GCOBC_TARGET_INSTALL_NAME)$(exeext); \
- 	    ( cd $(DESTDIR)$(bindir) && \
--	      $(LN) $(GCOBOL_INSTALL_NAME)$(exeext) $(GCOBOL_TARGET_INSTALL_NAME)$(exeext) ); \
--	      $(LN) $(GCOBC_INSTALL_NAME)$(exeext) $(GCOBC_TARGET_INSTALL_NAME)$(exeext) ); \
-+	      $(LN_S) $(GCOBOL_INSTALL_NAME)$(exeext) $(GCOBOL_TARGET_INSTALL_NAME)$(exeext) ); \
-+	      $(LN_S) $(GCOBC_INSTALL_NAME)$(exeext) $(GCOBC_TARGET_INSTALL_NAME)$(exeext) ); \
- 	  fi; \
- 	fi
- 	mkdir -p $(DESTDIR)$(datadir)/gcobol/udf
 diff --git a/gcc/cp/Make-lang.in b/gcc/cp/Make-lang.in
 index 25143c820..e97c23199 100644
 --- a/gcc/cp/Make-lang.in
