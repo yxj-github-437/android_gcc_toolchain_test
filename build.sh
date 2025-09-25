@@ -37,6 +37,7 @@ while [[ $# > 0 ]]; do
 done
 
 
+rm -rf $BASE_DIR/src/
 mkdir -p $BASE_DIR/src/
 
 
@@ -45,15 +46,22 @@ rm -rf /tmp/*.tar.*
 wget https://gcc.gnu.org/pub/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz -q -P /tmp/
 tar xf /tmp/gcc-$GCC_VERSION.tar.xz -C $BASE_DIR/src
 echo "unpack gcc."
+[ -d $BASE_DIR/src/gcc-$GCC_VERSION/ ] || exit 1
 
 ## download binutils
-wget http://ftphttps://ftpmirror.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
+wget https://ftpmirror.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
 tar xf /tmp/binutils-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
 echo "unpack binutils."
+[ -d $BASE_DIR/src/binutils-$BINUTILS_VERSION/ ] || exit 1
 
 
-patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $BASE_DIR/patches/gcc/*.patch || exit 1
-patch -d $BASE_DIR/src/binutils-$BINUTILS_VERSION -p1 < $BASE_DIR/patches/binutils/*.patch || exit 1
+for i in `find $BASE_DIR/patches/gcc/ -name *.patch -type f`; do
+	patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $i || exit 1
+done
+
+for i in `find $BASE_DIR/patches/binutils/ -name *.patch -type f`; do
+	patch -d $BASE_DIR/src/binutils-$BINUTILS_VERSION -p1 < $i || exit 1
+done
 
 cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
 for dir in bfd binutils elfcpp gas ld libctf libsframe opcodes; do
