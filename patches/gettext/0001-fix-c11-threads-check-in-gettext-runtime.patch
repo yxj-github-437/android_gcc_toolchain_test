@@ -1,0 +1,123 @@
+From 4ed190dba2dce84bec0f6f9d6a4f8839ff61aa8b Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Fri, 26 Sep 2025 03:11:12 +0800
+Subject: [PATCH] fix c11 threads check in gettext-runtime
+
+---
+ gettext-runtime/gnulib-lib/glthread/lock.h       | 4 ++++
+ gettext-runtime/gnulib-lib/mbrtowc.c             | 8 ++++++--
+ gettext-runtime/gnulib-lib/setlocale_null.c      | 8 ++++++--
+ gettext-runtime/intl/gnulib-lib/glthread/lock.h  | 4 ++++
+ gettext-runtime/intl/gnulib-lib/mbrtowc.c        | 8 ++++++--
+ gettext-runtime/intl/gnulib-lib/setlocale_null.c | 8 ++++++--
+ 6 files changed, 32 insertions(+), 8 deletions(-)
+
+diff --git a/gettext-runtime/gnulib-lib/glthread/lock.h b/gettext-runtime/gnulib-lib/glthread/lock.h
+index 805cd1c..217a259 100644
+--- a/gettext-runtime/gnulib-lib/glthread/lock.h
++++ b/gettext-runtime/gnulib-lib/glthread/lock.h
+@@ -88,6 +88,10 @@
+ #include <errno.h>
+ #include <stdlib.h>
+ 
++#if defined __ANDROID__ && HAVE_THREADS_H
++#  define c11_threads_in_use() 1
++#endif
++
+ #if !defined c11_threads_in_use
+ # if HAVE_THREADS_H && USE_POSIX_THREADS_FROM_LIBC
+ #  define c11_threads_in_use() 1
+diff --git a/gettext-runtime/gnulib-lib/mbrtowc.c b/gettext-runtime/gnulib-lib/mbrtowc.c
+index c1a689a..a31ced4 100644
+--- a/gettext-runtime/gnulib-lib/mbrtowc.c
++++ b/gettext-runtime/gnulib-lib/mbrtowc.c
+@@ -38,8 +38,12 @@
+ #  include <pthread.h>
+ #  if HAVE_THREADS_H && HAVE_WEAK_SYMBOLS
+ #   include <threads.h>
+-#   pragma weak thrd_exit
+-#   define c11_threads_in_use() (thrd_exit != NULL)
++#   if defined __ANDROID__ && __ANDROID_API__ < 30
++#     define c11_threads_in_use() 1
++#   else
++#     pragma weak thrd_exit
++#     define c11_threads_in_use() (thrd_exit != NULL)
++#   endif
+ #  else
+ #   define c11_threads_in_use() 0
+ #  endif
+diff --git a/gettext-runtime/gnulib-lib/setlocale_null.c b/gettext-runtime/gnulib-lib/setlocale_null.c
+index 89c8a06..8dd7ec3 100644
+--- a/gettext-runtime/gnulib-lib/setlocale_null.c
++++ b/gettext-runtime/gnulib-lib/setlocale_null.c
+@@ -40,8 +40,12 @@
+ #  include <pthread.h>
+ #  if HAVE_THREADS_H && HAVE_WEAK_SYMBOLS
+ #   include <threads.h>
+-#   pragma weak thrd_exit
+-#   define c11_threads_in_use() (thrd_exit != NULL)
++#   if defined __ANDROID__ && __ANDROID_API__ < 30
++#     define c11_threads_in_use() 1
++#   else
++#     pragma weak thrd_exit
++#     define c11_threads_in_use() (thrd_exit != NULL)
++#   endif
+ #  else
+ #   define c11_threads_in_use() 0
+ #  endif
+diff --git a/gettext-runtime/intl/gnulib-lib/glthread/lock.h b/gettext-runtime/intl/gnulib-lib/glthread/lock.h
+index 805cd1c..217a259 100644
+--- a/gettext-runtime/intl/gnulib-lib/glthread/lock.h
++++ b/gettext-runtime/intl/gnulib-lib/glthread/lock.h
+@@ -88,6 +88,10 @@
+ #include <errno.h>
+ #include <stdlib.h>
+ 
++#if defined __ANDROID__ && HAVE_THREADS_H
++#  define c11_threads_in_use() 1
++#endif
++
+ #if !defined c11_threads_in_use
+ # if HAVE_THREADS_H && USE_POSIX_THREADS_FROM_LIBC
+ #  define c11_threads_in_use() 1
+diff --git a/gettext-runtime/intl/gnulib-lib/mbrtowc.c b/gettext-runtime/intl/gnulib-lib/mbrtowc.c
+index c1a689a..a31ced4 100644
+--- a/gettext-runtime/intl/gnulib-lib/mbrtowc.c
++++ b/gettext-runtime/intl/gnulib-lib/mbrtowc.c
+@@ -38,8 +38,12 @@
+ #  include <pthread.h>
+ #  if HAVE_THREADS_H && HAVE_WEAK_SYMBOLS
+ #   include <threads.h>
+-#   pragma weak thrd_exit
+-#   define c11_threads_in_use() (thrd_exit != NULL)
++#   if defined __ANDROID__ && __ANDROID_API__ < 30
++#     define c11_threads_in_use() 1
++#   else
++#     pragma weak thrd_exit
++#     define c11_threads_in_use() (thrd_exit != NULL)
++#   endif
+ #  else
+ #   define c11_threads_in_use() 0
+ #  endif
+diff --git a/gettext-runtime/intl/gnulib-lib/setlocale_null.c b/gettext-runtime/intl/gnulib-lib/setlocale_null.c
+index 89c8a06..8dd7ec3 100644
+--- a/gettext-runtime/intl/gnulib-lib/setlocale_null.c
++++ b/gettext-runtime/intl/gnulib-lib/setlocale_null.c
+@@ -40,8 +40,12 @@
+ #  include <pthread.h>
+ #  if HAVE_THREADS_H && HAVE_WEAK_SYMBOLS
+ #   include <threads.h>
+-#   pragma weak thrd_exit
+-#   define c11_threads_in_use() (thrd_exit != NULL)
++#   if defined __ANDROID__ && __ANDROID_API__ < 30
++#     define c11_threads_in_use() 1
++#   else
++#     pragma weak thrd_exit
++#     define c11_threads_in_use() (thrd_exit != NULL)
++#   endif
+ #  else
+ #   define c11_threads_in_use() 0
+ #  endif
+-- 
+2.43.0
+
