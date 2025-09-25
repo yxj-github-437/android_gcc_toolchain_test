@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 BASE_DIR=$(pwd)
 GCC_VERSION=15.2.0
@@ -43,10 +43,12 @@ mkdir -p $BASE_DIR/src/
 ## download gcc
 wget https://gcc.gnu.org/pub/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz -q -P /tmp/
 tar xf /tmp/gcc-$GCC_VERSION.tar.xz -C $BASE_DIR/src
+echo "unpack gcc."
 
 ## download binutils
 wget http://ftp.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
 tar xf /tmp/binutils-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
+echo "unpack binutils."
 
 
 patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $BASE_DIR/patches/gcc/*.patch || exit 1
