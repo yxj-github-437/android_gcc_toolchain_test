@@ -41,12 +41,13 @@ mkdir -p $BASE_DIR/src/
 
 
 ## download gcc
+rm -rf /tmp/*.tar.*
 wget https://gcc.gnu.org/pub/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz -q -P /tmp/
 tar xf /tmp/gcc-$GCC_VERSION.tar.xz -C $BASE_DIR/src
 echo "unpack gcc."
 
 ## download binutils
-wget http://ftp.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
+wget http://ftphttps://ftpmirror.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
 tar xf /tmp/binutils-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
 echo "unpack binutils."
 
