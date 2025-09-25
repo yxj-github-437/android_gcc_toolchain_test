@@ -111,7 +111,7 @@ jobs:
         with:
           path: /opt/android-build/sysroot
           key: ${{ runner.os }}-sysroot-${{ matrix.config.target_abi }}-${{ env.LIBANDROID_COMMIT_ID }}
-          restore-keys: ${{ runner.os }}-sysroot--${{ matrix.config.target_abi }}
+          restore-keys: ${{ runner.os }}-sysroot-${{ matrix.config.target_abi }}-
 
       - name: restore ndk
         uses: actions/cache@v4
