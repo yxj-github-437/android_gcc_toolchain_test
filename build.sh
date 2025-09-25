@@ -57,16 +57,20 @@ tar xf /tmp/binutils-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
 echo "unpack binutils."
 [ -d $BASE_DIR/src/binutils-$BINUTILS_VERSION/ ] || exit 1
 
+cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
 
 for i in `find $PROJECT_DIR/patches/gcc/ -name *.patch -type f`; do
 	patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $i || exit 1
+done
+
+for i in `find $PROJECT_DIR/patches/gettext/ -name *.patch -type f`; do
+	patch -d $BASE_DIR/src/gcc-$GCC_VERSION/gettext -p1 < $i || exit 1
 done
 
 for i in `find $PROJECT_DIR/patches/binutils/ -name *.patch -type f`; do
 	patch -d $BASE_DIR/src/binutils-$BINUTILS_VERSION -p1 < $i || exit 1
 done
 
-cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
 for dir in bfd binutils elfcpp gas ld libctf libsframe opcodes; do
 	ln -srf $BASE_DIR/src/binutils-$BINUTILS_VERSION/$dir $BASE_DIR/src/gcc-$GCC_VERSION/$dir
 done
@@ -90,7 +94,6 @@ rm -rf $BASE_DIR/prebuild/
 ## build
 export PATH=$PREINSTALL_DIR/bin:$PATH
 export LD=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
-export LD_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
 
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
 ../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
