@@ -72,8 +72,8 @@ jobs:
             --toolchain /opt/ndk/build/cmake/android.toolchain.cmake \
             --install-prefix /opt/android-build \
             -GNinja
-          cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-          cmake --install ${{ steps.strings.outputs.build-output-dir }}
+          cmake --build ${{ github.workspace }}/libandroid-extra-build --config ${{ matrix.build_type }}
+          cmake --install ${{ github.workspace }}/libandroid-extra-build
         if: steps.sysroot-cache.outputs.cache-hit != 'true'
 
 
