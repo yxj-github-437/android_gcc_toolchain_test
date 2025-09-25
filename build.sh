@@ -73,6 +73,8 @@ done
 
 
 ## prebuild
+export CC_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/$TARGET21-clang
+export CXX_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/$TARGET21-clang++
 export AR_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
 export LD_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
 
