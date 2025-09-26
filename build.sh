@@ -46,13 +46,13 @@ mkdir -p $BASE_DIR/src/
 
 ## download gcc
 rm -rf /tmp/*.tar.*
-wget https://gcc.gnu.org/pub/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz -q -P /tmp/
+wget --tries=3 https://gcc.gnu.org/pub/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz -q -P /tmp/
 tar xf /tmp/gcc-$GCC_VERSION.tar.xz -C $BASE_DIR/src
 echo "unpack gcc."
 [ -d $BASE_DIR/src/gcc-$GCC_VERSION/ ] || exit 1
 
 ## download binutils
-wget https://ftpmirror.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
+wget --tries=3 https://ftpmirror.gnu.org//gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
 tar xf /tmp/binutils-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
 echo "unpack binutils."
 [ -d $BASE_DIR/src/binutils-$BINUTILS_VERSION/ ] || exit 1
@@ -98,10 +98,11 @@ export LD=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
 ../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
-	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/opt/gcc-install --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/opt/gcc-install/sysroot \
+	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/usr --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/usr/sysroot \
 	--disable-bootstrap
 make -j $JOBS || exit 1
-make install || exit 1
+DESTDIR=/opt/gcc-install/ make install || exit 1
 
+cp -r /opt/android-build/sysroot/ /opt/gcc-install/sysroot
 find /opt/gcc-install/ -type f
 

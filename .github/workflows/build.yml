@@ -136,6 +136,7 @@ jobs:
 
       - name: build
         run: |
-          ./build.sh --base-dir=/opt/ --jobs=4 --gcc-version=15.2.0 --target=${{ matrix.config.target }} --host=${{ matrix.config.host }}
+          ./build.sh --base-dir=/opt/ --jobs=4 --gcc-version=15.2.0 --binutils-version=2.44 \
+            --target=${{ matrix.config.target }} --host=${{ matrix.config.host }}
 
 
