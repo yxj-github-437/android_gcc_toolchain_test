@@ -131,6 +131,9 @@ jobs:
           path: /opt/ndk
           key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
 
+      - name: install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext
+
       - name: checkout code
         uses: actions/checkout@v5
 
@@ -138,5 +141,11 @@ jobs:
         run: |
           ./build.sh --base-dir=/opt/ --jobs=4 --gcc-version=15.2.0 --binutils-version=2.44 \
             --target=${{ matrix.config.target }} --host=${{ matrix.config.host }}
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.config.target }}
+          path: /opt/gcc-install/*.tar.xz
 
 

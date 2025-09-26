@@ -76,7 +76,6 @@ for dir in bfd binutils elfcpp gas ld libctf libsframe opcodes; do
 done
 
 
-
 ## prebuild
 PREINSTALL_DIR=/opt/gcc-preinstall
 export AR_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
@@ -96,6 +95,7 @@ export PATH=$PREINSTALL_DIR/bin:$PATH
 export LD=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
 
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
+export gcc_cv_objdump=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objdump
 ../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
 	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/usr --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/usr/sysroot \
@@ -103,6 +103,7 @@ mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
 make -j $JOBS || exit 1
 DESTDIR=/opt/gcc-install/ make install || exit 1
 
-cp -r /opt/android-build/sysroot/ /opt/gcc-install/sysroot
-find /opt/gcc-install/ -type f
+cp -r /opt/android-build/sysroot/ /opt/gcc-install/usr/sysroot || exit 1
+
+cd /opt/gcc-install/ && tar -Jcvf $TARGET-gcc-$GCC_VERSION.tar.xz ./usr
 

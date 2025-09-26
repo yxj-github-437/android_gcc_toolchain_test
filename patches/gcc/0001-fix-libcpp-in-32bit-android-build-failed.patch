@@ -1,0 +1,31 @@
+From f2dbeff3fafafc02ada0315e4462c3e5a6d9ec52 Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Fri, 26 Sep 2025 23:58:18 +0800
+Subject: [PATCH] fix libcpp in 32bit android build failed.
+
+---
+ libcpp/files.cc | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/libcpp/files.cc b/libcpp/files.cc
+index c1abde663..6d3dd336e 100644
+--- a/libcpp/files.cc
++++ b/libcpp/files.cc
+@@ -795,11 +795,13 @@ read_file_guts (cpp_reader *pfile, _cpp_file *file, location_t loc,
+     cpp_error_at (pfile, CPP_DL_WARNING, loc,
+ 		  "%s is shorter than expected", file->path);
+ 
++  off_t ot;
+   file->buffer = _cpp_convert_input (pfile,
+ 				     input_charset,
+ 				     buf, size + pad, total,
+ 				     &file->buffer_start,
+-				     &file->st.st_size);
++				     &ot);
++  file->st.st_size = ot;
+   file->buffer_valid = file->buffer;
+   return file->buffer_valid;
+ }
+-- 
+2.43.0
+
