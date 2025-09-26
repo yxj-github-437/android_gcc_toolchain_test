@@ -63,14 +63,8 @@ tar xf /tmp/zstd-$ZSTD_VERSION.tar.gz -C $BASE_DIR/src
 echo "unpack zstd."
 [ -d $BASE_DIR/src/zstd-$ZSTD_VERSION/ ] || exit 1
 
-cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
-
 for i in `find $PROJECT_DIR/patches/gcc/ -name *.patch -type f`; do
 	patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $i || exit 1
-done
-
-for i in `find $PROJECT_DIR/patches/gettext/ -name *.patch -type f`; do
-	patch -d $BASE_DIR/src/gcc-$GCC_VERSION/gettext -p1 < $i || exit 1
 done
 
 for i in `find $PROJECT_DIR/patches/binutils/ -name *.patch -type f`; do
@@ -104,6 +98,13 @@ export PATH=$PREINSTALL_DIR/bin:$PATH
 CC=$HOST-gcc CFLAGS="-fPIC -O2" make lib -j $JOBS -C $BASE_DIR/src/zstd-$ZSTD_VERSION/ || exit 1
 mkdir -p $PREINSTALL_DIR/$HOST/include/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/*.h $PREINSTALL_DIR/$HOST/include/ || exit 1
 mkdir -p $PREINSTALL_DIR/$HOST/lib/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/libzstd.a $PREINSTALL_DIR/$HOST/lib/ || exit 1
+
+
+
+cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
+for i in `find $PROJECT_DIR/patches/gettext/ -name *.patch -type f`; do
+	patch -d $BASE_DIR/src/gcc-$GCC_VERSION/gettext -p1 < $i || exit 1
+done
 
 ## build
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
