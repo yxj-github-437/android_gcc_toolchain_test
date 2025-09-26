@@ -4,7 +4,7 @@ on: [push]
 
 env:
   NDK_VERSION: 28c
-  LIBANDROID_COMMIT_ID: a57374985fdd505b4c99e66c776e9a0a3fd5ea50
+  LIBANDROID_COMMIT_ID: fa86e7a13986555784cec893088f6e5950da9a02
 
 jobs:
   prepare_ndk:
@@ -74,6 +74,18 @@ jobs:
             -GNinja
           cmake --build ${{ github.workspace }}/libandroid-extra-build --config ${{ matrix.build_type }}
           cmake --install ${{ github.workspace }}/libandroid-extra-build
+
+          if [[ ${{ matrix.target_abi }} == x86_64 ]]; then
+            rm -rf ${{ github.workspace }}/libandroid-extra-build
+            cmake -B ${{ github.workspace }}/libandroid-extra-build \
+              -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+              -DANDROID_PLATFORM=android-21 -DANDROID_ABI=x86 \
+              --toolchain /opt/ndk/build/cmake/android.toolchain.cmake \
+              --install-prefix /opt/android-build \
+              -GNinja
+            cmake --build ${{ github.workspace }}/libandroid-extra-build --config ${{ matrix.build_type }}
+            cmake --install ${{ github.workspace }}/libandroid-extra-build
+          fi
         if: steps.sysroot-cache.outputs.cache-hit != 'true'
 
 
@@ -124,6 +136,6 @@ jobs:
 
       - name: build
         run: |
-          ./build.sh --base-dir=/opt/ --jobs=1 --gcc-version=15.2.0 --target=${{ matrix.config.target }} --host=${{ matrix.config.host }}
+          ./build.sh --base-dir=/opt/ --jobs=4 --gcc-version=15.2.0 --target=${{ matrix.config.target }} --host=${{ matrix.config.host }}
 
 
