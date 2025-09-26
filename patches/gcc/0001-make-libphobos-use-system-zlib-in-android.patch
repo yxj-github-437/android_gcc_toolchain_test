@@ -1,0 +1,35 @@
+From 2ebde479d1606d7b985ee26cea631d8a12577b01 Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Sat, 27 Sep 2025 01:37:33 +0800
+Subject: [PATCH] make libphobos use system zlib in android
+
+---
+ libphobos/configure | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/libphobos/configure b/libphobos/configure
+index 4f5be7d4f..5d2553635 100755
+--- a/libphobos/configure
++++ b/libphobos/configure
+@@ -15531,7 +15531,6 @@ if ac_fn_c_try_link "$LINENO"; then :
+ 
+       if test "$cross_compiling" = yes; then :
+           system_zlib_found=no
+-
+ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+@@ -15560,6 +15559,10 @@ rm -f core conftest.err conftest.$ac_objext \
+     conftest$ac_exeext conftest.$ac_ext
+   LIBS=$save_LIBS
+ 
++  case $target in
++	*-android*) system_zlib_found=yes ;;
++  esac
++
+   if test x$system_zlib_found = xyes && test x$with_target_system_zlib != xno; then
+     { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+ $as_echo "found" >&6; }
+-- 
+2.43.0
+

@@ -125,14 +125,8 @@ jobs:
           key: ${{ runner.os }}-sysroot-${{ matrix.config.target_abi }}-${{ env.LIBANDROID_COMMIT_ID }}
           restore-keys: ${{ runner.os }}-sysroot-${{ matrix.config.target_abi }}-
 
-      - name: restore ndk
-        uses: actions/cache@v4
-        with:
-          path: /opt/ndk
-          key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
-
       - name: install gettext
-        run: sudo apt-get update && sudo apt-get install -y gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext gdc llvm lld
 
       - name: checkout code
         uses: actions/checkout@v5

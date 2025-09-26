@@ -4,6 +4,7 @@ BASE_DIR=$(pwd)
 PROJECT_DIR=$(pwd)
 GCC_VERSION=15.2.0
 BINUTILS_VERSION=2.45
+ZSTD_VERSION=1.5.7
 JBOS=1
 TARGET=aarch64-linux-android
 HOST=aarch64-linux-android
@@ -52,10 +53,15 @@ echo "unpack gcc."
 [ -d $BASE_DIR/src/gcc-$GCC_VERSION/ ] || exit 1
 
 ## download binutils
-wget --tries=3 https://ftpmirror.gnu.org//gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
+wget --tries=3 https://ftpmirror.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
 tar xf /tmp/binutils-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
 echo "unpack binutils."
 [ -d $BASE_DIR/src/binutils-$BINUTILS_VERSION/ ] || exit 1
+
+wget --tries=3 https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz -q -P /tmp/
+tar xf /tmp/zstd-$ZSTD_VERSION.tar.gz -C $BASE_DIR/src
+echo "unpack zstd."
+[ -d $BASE_DIR/src/zstd-$ZSTD_VERSION/ ] || exit 1
 
 cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
 
@@ -78,11 +84,11 @@ done
 
 ## prebuild
 PREINSTALL_DIR=/opt/gcc-preinstall
-export AR_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
-export LD_FOR_TARGET=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
+export AR_FOR_TARGET=llvm-ar
+export LD_FOR_TARGET=ld.lld
 
 mkdir -p $BASE_DIR/prebuild; cd $BASE_DIR/prebuild
-../src/gcc-$GCC_VERSION/configure --host=x86_64-linux-gnu --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++ --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
+../src/gcc-$GCC_VERSION/configure --host=x86_64-linux-gnu --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran,d --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
 	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/opt/android-build/sysroot \
 	--disable-bootstrap  --prefix=$PREINSTALL_DIR
@@ -92,11 +98,16 @@ rm -rf $BASE_DIR/prebuild/
 
 ## build
 export PATH=$PREINSTALL_DIR/bin:$PATH
-export LD=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/ld.lld
+export LD=ld.lld
+
+# build zstd
+CC=$HOST-gcc CXX=$HOST-g++ make lib -j $JOBS -C $BASE_DIR/src/zstd-$ZSTD_VERSION/ || exit 1
+mkdir -p $PREINSTALL_DIR/$HOST/include/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/*.h $PREINSTALL_DIR/$HOST/include/ || exit 1
+mkdir -p $PREINSTALL_DIR/$HOST/lib/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/libzstd.a $PREINSTALL_DIR/$HOST/lib/ || exit 1
 
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
-export gcc_cv_objdump=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objdump
-../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
+export gcc_cv_objdump=llvm-objdump
+../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran,d --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
 	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/usr --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/usr/sysroot \
 	--disable-bootstrap
