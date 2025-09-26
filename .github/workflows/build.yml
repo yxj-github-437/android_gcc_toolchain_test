@@ -125,8 +125,9 @@ jobs:
           key: ${{ runner.os }}-sysroot-${{ matrix.config.target_abi }}-${{ env.LIBANDROID_COMMIT_ID }}
           restore-keys: ${{ runner.os }}-sysroot-${{ matrix.config.target_abi }}-
 
-      - name: install gettext
-        run: sudo apt-get update && sudo apt-get install -y gettext gdc llvm lld
+      - name: install system build tools
+        run: sudo apt-get update && \
+             sudo apt-get install -y gettext gdc llvm lld libgmp-dev libmpfr-dev libmpc-dev libisl-dev
 
       - name: checkout code
         uses: actions/checkout@v5
@@ -139,7 +140,7 @@ jobs:
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.config.target }}
+          name: ${{ matrix.config.target }}-gcc
           path: /opt/gcc-install/*.tar.xz
 
 

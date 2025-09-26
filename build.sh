@@ -86,6 +86,8 @@ done
 PREINSTALL_DIR=/opt/gcc-preinstall
 export AR_FOR_TARGET=llvm-ar
 export LD_FOR_TARGET=ld.lld
+export LD=ld.lld
+export AR=llvm-ar
 
 mkdir -p $BASE_DIR/prebuild; cd $BASE_DIR/prebuild
 ../src/gcc-$GCC_VERSION/configure --host=x86_64-linux-gnu --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran,d --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
@@ -96,15 +98,14 @@ make -j $JOBS || exit 1
 make install || exit 1
 rm -rf $BASE_DIR/prebuild/
 
-## build
 export PATH=$PREINSTALL_DIR/bin:$PATH
-export LD=ld.lld
 
 # build zstd
-CC=$HOST-gcc CXX=$HOST-g++ make lib -j $JOBS -C $BASE_DIR/src/zstd-$ZSTD_VERSION/ || exit 1
+CC=$HOST-gcc CFLAGS="-fPIC -O2" make lib -j $JOBS -C $BASE_DIR/src/zstd-$ZSTD_VERSION/ || exit 1
 mkdir -p $PREINSTALL_DIR/$HOST/include/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/*.h $PREINSTALL_DIR/$HOST/include/ || exit 1
 mkdir -p $PREINSTALL_DIR/$HOST/lib/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/libzstd.a $PREINSTALL_DIR/$HOST/lib/ || exit 1
 
+## build
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
 export gcc_cv_objdump=llvm-objdump
 ../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=c,c++,fortran,d --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
@@ -116,5 +117,12 @@ DESTDIR=/opt/gcc-install/ make install || exit 1
 
 cp -r /opt/android-build/sysroot/ /opt/gcc-install/usr/sysroot || exit 1
 
-cd /opt/gcc-install/ && tar -Jcvf $TARGET-gcc-$GCC_VERSION.tar.xz ./usr
 
+rm -rf /opt/gcc-install/usr/include/* /opt/gcc-install/usr/lib/lib*.*a /opt/gcc-install/usr/lib/bfd
+mkdir -p /opt/gcc-install/usr/$TARGET/include /opt/gcc-install/usr/$TARGET/lib
+case $TARGET in
+	*64-*-android*) mkdir -p /opt/gcc-install/usr/$TARGET/lib64;;
+esac
+# strip
+cd /opt/gcc-install/usr && find $TARGET bin lib lib64 libexec -type f -not -type l -not -path "*/*include*/*" -print -exec llvm-strip -R .comment --strip-unneeded {} \;
+cd /opt/gcc-install/ && tar -cf $TARGET-gcc-$GCC_VERSION.tar ./usr && xz -ze9f $TARGET-gcc-$GCC_VERSION.tar
