@@ -119,7 +119,8 @@ DESTDIR=/opt/gcc-install/ make install || exit 1
 cp -r /opt/android-build/sysroot/ /opt/gcc-install/usr/sysroot || exit 1
 
 
-rm -rf /opt/gcc-install/usr/include/* /opt/gcc-install/usr/lib/lib*.*a /opt/gcc-install/usr/lib/bfd
+rm -rf /opt/gcc-install/usr/include/* /opt/gcc-install/usr/lib/lib*.*a /opt/gcc-install/usr/lib/bfd*
+rm -rf /opt/gcc-install/usr/$TARGET/lib
 mkdir -p /opt/gcc-install/usr/$TARGET/include /opt/gcc-install/usr/$TARGET/lib
 case $TARGET in
 	*64-*-android*) mkdir -p /opt/gcc-install/usr/$TARGET/lib64;;

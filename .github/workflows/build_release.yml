@@ -1,12 +1,19 @@
-name: android gcc builds
+name: android gcc release builds
 
-on: [push]
-
-env:
-  NDK_VERSION: 28c
-  LIBANDROID_COMMIT_ID: fa86e7a13986555784cec893088f6e5950da9a02
+on:
+  push:
+    tags:
+      - "gcc-*"
 
 jobs:
+  split-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      gcc-version: ${{ steps.get-gcc-version.outputs.version }}
+    steps:
+      - id: get-gcc-version
+        run: echo "version=$(echo ${{ github.ref_name }} | cut -d- -f2)" >> $GITHUB_OUTPUT
+
   prepare_ndk:
     runs-on: ubuntu-latest
     steps:
@@ -140,4 +147,19 @@ jobs:
           name: ${{ matrix.config.target }}-gcc
           path: /opt/gcc-install/*.tar.xz
 
+  release:
+    runs-on: ubuntu-latest
+    needs: build_gcc
 
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        path: ./
+        merge-multiple: true
+
+    - name: Upload to Release
+      id: upload_to_release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "*.tar.xz"
