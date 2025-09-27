@@ -5,6 +5,10 @@ on:
     tags:
       - "gcc-*"
 
+env:
+  NDK_VERSION: 28c
+  LIBANDROID_COMMIT_ID: fa86e7a13986555784cec893088f6e5950da9a02
+
 jobs:
   split-tag:
     runs-on: ubuntu-latest
@@ -138,7 +142,7 @@ jobs:
 
       - name: build
         run: |
-          ./build.sh --base-dir=/opt/ --jobs=4 --gcc-version=15.2.0 --binutils-version=2.44 \
+          ./build.sh --base-dir=/opt/ --jobs=4 --gcc-version=${{ needs.split-tag.outputs.gcc-version }} --binutils-version=2.44 \
             --target=${{ matrix.config.target }} --host=${{ matrix.config.target }}
 
       - name: upload artifact
