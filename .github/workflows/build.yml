@@ -3,7 +3,7 @@ name: android gcc builds
 on:
   push:
     branches-ignore: []
-    tag-ignore: ['**']
+    tags-ignore: ['**']
 
 env:
   NDK_VERSION: 28c
