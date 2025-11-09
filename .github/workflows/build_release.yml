@@ -7,7 +7,7 @@ on:
 
 env:
   NDK_VERSION: 29
-  LIBANDROID_COMMIT_ID: 1ac9d3aa964c39f452fe5ce5ca6084da6d8dc3fa
+  LIBANDROID_COMMIT_ID: 1b82344495074bf862ab052dde889b3153ce583d
 
 jobs:
   split-tag:
