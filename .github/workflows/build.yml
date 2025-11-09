@@ -8,7 +8,7 @@ on:
 
 env:
   NDK_VERSION: 29
-  LIBANDROID_COMMIT_ID: 1ac9d3aa964c39f452fe5ce5ca6084da6d8dc3fa
+  LIBANDROID_COMMIT_ID: 62b93cd64cc6431e6c044d032406985add59ba44
 
 jobs:
   prepare_ndk:
