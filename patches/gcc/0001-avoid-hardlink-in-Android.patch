@@ -22,14 +22,14 @@ index 55b4cd7db..fc943a2b1 100644
  	    rm -f $(DESTDIR)$(bindir)/$(FULL_DRIVER_NAME); \
  	    ( cd $(DESTDIR)$(bindir) && \
 -	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
-+	      $(LN_S) $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
++	      $(LN_S) -r $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
  	  fi; \
  	  if [ ! -f gcc-cross$(exeext) ] \
  	      && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ]; then \
  	    rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-tmp$(exeext); \
  	    ( cd $(DESTDIR)$(bindir) && \
 -	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
-+	      $(LN_S) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
++	      $(LN_S) -r $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
  	      mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
  	  fi; \
  	fi
@@ -38,7 +38,7 @@ index 55b4cd7db..fc943a2b1 100644
  	      rm -f $(DESTDIR)$(bindir)/$$target_install_name$(exeext); \
  	      ( cd $(DESTDIR)$(bindir) && \
 -		$(LN) $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
-+		$(LN_S) $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
++		$(LN_S) -r $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
  	    fi ; \
  	  done; \
  	fi
@@ -51,17 +51,17 @@ index 25143c820..e97c23199 100644
  	  rm -f $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
  	  ( cd $(DESTDIR)$(bindir) && \
 -	    $(LN) $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) ); \
-+	    $(LN_S) $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) ); \
++	    $(LN_S) -r $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) ); \
  	  if [ -f cc1plus$(exeext) ] ; then \
  	    if [ ! -f g++-cross$(exeext) ] ; then \
  	      rm -f $(DESTDIR)$(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
  	      ( cd $(DESTDIR)$(bindir) && \
 -		$(LN) $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \
-+		$(LN_S) $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \
++		$(LN_S) -r $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \
  	      rm -f $(DESTDIR)$(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
  	      ( cd $(DESTDIR)$(bindir) && \
 -		$(LN) $(CXX_INSTALL_NAME)$(exeext) $(CXX_TARGET_INSTALL_NAME)$(exeext) ); \
-+		$(LN_S) $(CXX_INSTALL_NAME)$(exeext) $(CXX_TARGET_INSTALL_NAME)$(exeext) ); \
++		$(LN_S) -r $(CXX_INSTALL_NAME)$(exeext) $(CXX_TARGET_INSTALL_NAME)$(exeext) ); \
  	    fi ; \
  	  fi; \
  	fi
@@ -74,7 +74,7 @@ index 2d444c999..331f60f57 100644
  	    rm -f $(DESTDIR)$(bindir)/$(D_TARGET_INSTALL_NAME)$(exeext); \
  	    ( cd $(DESTDIR)$(bindir) && \
 -	      $(LN) $(D_INSTALL_NAME)$(exeext) $(D_TARGET_INSTALL_NAME)$(exeext) ); \
-+	      $(LN_S) $(D_INSTALL_NAME)$(exeext) $(D_TARGET_INSTALL_NAME)$(exeext) ); \
++	      $(LN_S) -r $(D_INSTALL_NAME)$(exeext) $(D_TARGET_INSTALL_NAME)$(exeext) ); \
  	  fi; \
  	fi
 
@@ -87,7 +87,7 @@ index 5b2f921bf..958bce2d5 100644
  	    if [ ! -f gfortran-cross$(exeext) ] ; then \
  	      rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
 -	      $(LN) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
-+	      $(LN_S) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
++	      $(LN_S) -r $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
  	    fi ; \
  	  fi; \
  	fi
@@ -100,7 +100,7 @@ index cab5adbc1..82a411e84 100644
  	    rm -f $(DESTDIR)$(bindir)/$(GCCGO_TARGET_INSTALL_NAME)$(exeext); \
  	    ( cd $(DESTDIR)$(bindir) && \
 -	      $(LN) $(GCCGO_INSTALL_NAME)$(exeext) $(GCCGO_TARGET_INSTALL_NAME)$(exeext) ); \
-+	      $(LN_S) $(GCCGO_INSTALL_NAME)$(exeext) $(GCCGO_TARGET_INSTALL_NAME)$(exeext) ); \
++	      $(LN_S) -r $(GCCGO_INSTALL_NAME)$(exeext) $(GCCGO_TARGET_INSTALL_NAME)$(exeext) ); \
  	  fi; \
  	fi
 
@@ -113,7 +113,7 @@ index 470825ca2..420112d53 100644
  	    rm -f $(DESTDIR)$(bindir)/$(GM2_TARGET_INSTALL_NAME)$(exeext); \
  	    ( cd $(DESTDIR)$(bindir) && \
 -	      $(LN) $(GM2_INSTALL_NAME)$(exeext) $(GM2_TARGET_INSTALL_NAME)$(exeext) ); \
-+	      $(LN_S) $(GM2_INSTALL_NAME)$(exeext) $(GM2_TARGET_INSTALL_NAME)$(exeext) ); \
++	      $(LN_S) -r $(GM2_INSTALL_NAME)$(exeext) $(GM2_TARGET_INSTALL_NAME)$(exeext) ); \
  	  fi; \
  	fi
  	-for tool in cc1gm2$(exeext); do \
@@ -126,14 +126,14 @@ index 835e113ae..bc8f0f63a 100644
  #	else \
  #	  cd $(DESTDIR)$(bindir) && \
 -#	   $(LN) $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
-+#	   $(LN_S) $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
++#	   $(LN_S) -r $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
  #	fi
  	-rm -f $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
  	$(INSTALL_PROGRAM) gccrs$(exeext) $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
  	rm -f $(DESTDIR)$(bindir)/$(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
  	( cd $(DESTDIR)$(bindir) && \
 -      $(LN) $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext) ); \
-+      $(LN_S) $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext) ); \
++      $(LN_S) -r $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext) ); \
 
  # Install headers needed for plugins.
  rust.install-plugin:
