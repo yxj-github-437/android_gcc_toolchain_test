@@ -1,0 +1,143 @@
+From f04ad34d6cb2ed19698ce2b703c38b1aee7162fa Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Sun, 18 Jan 2026 03:45:57 +0800
+Subject: [PATCH] avoid hardlink in Android
+
+---
+ gcc/Makefile.in          | 6 +++---
+ gcc/cp/Make-lang.in      | 6 +++---
+ gcc/d/Make-lang.in       | 2 +-
+ gcc/fortran/Make-lang.in | 2 +-
+ gcc/go/Make-lang.in      | 2 +-
+ gcc/m2/Make-lang.in      | 2 +-
+ gcc/rust/Make-lang.in    | 4 ++--
+ 7 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/gcc/Makefile.in b/gcc/Makefile.in
+index abf98aabac8..04a3d89746b 100644
+--- a/gcc/Makefile.in
++++ b/gcc/Makefile.in
+@@ -4274,14 +4274,14 @@ install-driver: installdirs xgcc$(exeext)
+ 	  if [ "$(GCC_INSTALL_NAME)" != "$(target_noncanonical)-gcc-$(version)" ]; then \
+ 	    rm -f $(DESTDIR)$(bindir)/$(FULL_DRIVER_NAME); \
+ 	    ( cd $(DESTDIR)$(bindir) && \
+-	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
++	      $(LN_S) -r $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
+ 	  fi; \
+ 	  if [ ! -f gcc-cross$(exeext) ] \
+ 	      && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ] \
+ 	      && [ "$(GCC_TARGET_INSTALL_NAME)$(exeext)" != "$(FULL_DRIVER_NAME)" ] ; then \
+ 	    rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-tmp$(exeext); \
+ 	    ( cd $(DESTDIR)$(bindir) && \
+-	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
++	      $(LN_S) -r $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
+ 	      mv -f $(target_noncanonical)-gcc-tmp$(exeext) $(GCC_TARGET_INSTALL_NAME)$(exeext) ); \
+ 	  fi; \
+ 	fi
+@@ -4560,7 +4560,7 @@ install-gcc-ar: installdirs gcc-ar$(exeext) gcc-nm$(exeext) gcc-ranlib$(exeext)
+ 	    else \
+ 	      rm -f $(DESTDIR)$(bindir)/$$target_install_name$(exeext); \
+ 	      ( cd $(DESTDIR)$(bindir) && \
+-		$(LN) $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
++		$(LN_S) -r $$install_name$(exeext) $$target_install_name$(exeext) ) ; \
+ 	    fi ; \
+ 	  done; \
+ 	fi
+diff --git a/gcc/cp/Make-lang.in b/gcc/cp/Make-lang.in
+index 7f476531d84..ab05ccbc5b5 100644
+--- a/gcc/cp/Make-lang.in
++++ b/gcc/cp/Make-lang.in
+@@ -325,15 +325,15 @@ c++.install-common: installdirs
+ 	  chmod a+x $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
+ 	  rm -f $(DESTDIR)$(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
+ 	  ( cd $(DESTDIR)$(bindir) && \
+-	    $(LN) $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) ); \
++	    $(LN_S) -r $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) ); \
+ 	  if [ -f cc1plus$(exeext) ] ; then \
+ 	    if [ ! -f g++-cross$(exeext) ] ; then \
+ 	      rm -f $(DESTDIR)$(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
+ 	      ( cd $(DESTDIR)$(bindir) && \
+-		$(LN) $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \
++		$(LN_S) -r $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \
+ 	      rm -f $(DESTDIR)$(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
+ 	      ( cd $(DESTDIR)$(bindir) && \
+-		$(LN) $(CXX_INSTALL_NAME)$(exeext) $(CXX_TARGET_INSTALL_NAME)$(exeext) ); \
++		$(LN_S) -r $(CXX_INSTALL_NAME)$(exeext) $(CXX_TARGET_INSTALL_NAME)$(exeext) ); \
+ 	    fi ; \
+ 	  fi; \
+ 	fi
+diff --git a/gcc/d/Make-lang.in b/gcc/d/Make-lang.in
+index 9f048bb4e5d..f05325a6530 100644
+--- a/gcc/d/Make-lang.in
++++ b/gcc/d/Make-lang.in
+@@ -324,7 +324,7 @@ d.install-common: installdirs
+ 	  else \
+ 	    rm -f $(DESTDIR)$(bindir)/$(D_TARGET_INSTALL_NAME)$(exeext); \
+ 	    ( cd $(DESTDIR)$(bindir) && \
+-	      $(LN) $(D_INSTALL_NAME)$(exeext) $(D_TARGET_INSTALL_NAME)$(exeext) ); \
++	      $(LN_S) -r $(D_INSTALL_NAME)$(exeext) $(D_TARGET_INSTALL_NAME)$(exeext) ); \
+ 	  fi; \
+ 	fi
+ 
+diff --git a/gcc/fortran/Make-lang.in b/gcc/fortran/Make-lang.in
+index 7dca21f8290..abaaf5a36c2 100644
+--- a/gcc/fortran/Make-lang.in
++++ b/gcc/fortran/Make-lang.in
+@@ -260,7 +260,7 @@ fortran.install-common: install-finclude-dir installdirs
+ 	    chmod a+x $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext); \
+ 	    if [ ! -f gfortran-cross$(exeext) ] ; then \
+ 	      rm -f $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
+-	      $(LN) $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
++	      $(LN_S) -r $(DESTDIR)$(bindir)/$(GFORTRAN_INSTALL_NAME)$(exeext) $(DESTDIR)$(bindir)/$(GFORTRAN_TARGET_INSTALL_NAME)$(exeext); \
+ 	    fi ; \
+ 	  fi; \
+ 	fi
+diff --git a/gcc/go/Make-lang.in b/gcc/go/Make-lang.in
+index 6ebd0a9a232..575e9e48619 100644
+--- a/gcc/go/Make-lang.in
++++ b/gcc/go/Make-lang.in
+@@ -157,7 +157,7 @@ go.install-common: installdirs
+ 	  else \
+ 	    rm -f $(DESTDIR)$(bindir)/$(GCCGO_TARGET_INSTALL_NAME)$(exeext); \
+ 	    ( cd $(DESTDIR)$(bindir) && \
+-	      $(LN) $(GCCGO_INSTALL_NAME)$(exeext) $(GCCGO_TARGET_INSTALL_NAME)$(exeext) ); \
++	      $(LN_S) -r $(GCCGO_INSTALL_NAME)$(exeext) $(GCCGO_TARGET_INSTALL_NAME)$(exeext) ); \
+ 	  fi; \
+ 	fi
+ 
+diff --git a/gcc/m2/Make-lang.in b/gcc/m2/Make-lang.in
+index 317917e26a8..a0297ce5169 100644
+--- a/gcc/m2/Make-lang.in
++++ b/gcc/m2/Make-lang.in
+@@ -397,7 +397,7 @@ m2.install-common: installdirs
+ 	  else \
+ 	    rm -f $(DESTDIR)$(bindir)/$(GM2_TARGET_INSTALL_NAME)$(exeext); \
+ 	    ( cd $(DESTDIR)$(bindir) && \
+-	      $(LN) $(GM2_INSTALL_NAME)$(exeext) $(GM2_TARGET_INSTALL_NAME)$(exeext) ); \
++	      $(LN_S) -r $(GM2_INSTALL_NAME)$(exeext) $(GM2_TARGET_INSTALL_NAME)$(exeext) ); \
+ 	  fi; \
+ 	fi
+ 	-for tool in cc1gm2$(exeext); do \
+diff --git a/gcc/rust/Make-lang.in b/gcc/rust/Make-lang.in
+index c0b2ef7e64c..d8cacb695d2 100644
+--- a/gcc/rust/Make-lang.in
++++ b/gcc/rust/Make-lang.in
+@@ -347,13 +347,13 @@ rust.install-common: installdirs
+ #	  :; \
+ #	else \
+ #	  cd $(DESTDIR)$(bindir) && \
+-#	   $(LN) $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
++#	   $(LN_S) -r $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
+ #	fi
+ 	-rm -f $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
+ 	$(INSTALL_PROGRAM) gccrs$(exeext) $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
+ 	rm -f $(DESTDIR)$(bindir)/$(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
+ 	( cd $(DESTDIR)$(bindir) && \
+-      $(LN) $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext) ); \
++      $(LN_S) -r $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext) ); \
+ 
+ # Install headers needed for plugins.
+ rust.install-plugin:
+-- 
+2.43.0
+

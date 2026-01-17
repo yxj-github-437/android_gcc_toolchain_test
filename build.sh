@@ -3,11 +3,16 @@
 BASE_DIR=$(pwd)
 PROJECT_DIR=$(pwd)
 GCC_VERSION=15.2.0
+GCC_PATH=
 BINUTILS_VERSION=2.45
 ZSTD_VERSION=1.5.7
 JBOS=1
 TARGET=aarch64-linux-android
 HOST=aarch64-linux-android
+
+version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n1)" != "$1"; }
+version_lt() { test "$(printf '%s\n' "$@" | sort -V | head -n1)" == "$1"; }
+version_eq() { test "$1" == "$2"; }
 
 #### handle commands
 while [[ $# > 0 ]]; do
@@ -23,6 +28,9 @@ while [[ $# > 0 ]]; do
 		;;
 		--gcc-version=*)
 			GCC_VERSION=${1/--gcc-version=/}
+		;;
+		--gcc-path=*)
+			GCC_PATH=${1/--gcc-path=/}
 		;;
 		--binutils-version=*)
 			BINUTILS_VERSION=${1/--binutils-version=/}
@@ -47,10 +55,17 @@ mkdir -p $BASE_DIR/src/
 
 ## download gcc
 rm -rf /tmp/*.tar.*
-wget --tries=3 https://gcc.gnu.org/pub/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz -q -P /tmp/
-tar xf /tmp/gcc-$GCC_VERSION.tar.xz -C $BASE_DIR/src
-echo "unpack gcc."
-[ -d $BASE_DIR/src/gcc-$GCC_VERSION/ ] || exit 1
+if [ -z "$GCC_PATH" ]; then
+	wget --tries=3 https://gcc.gnu.org/pub/gcc/releases/gcc-$GCC_VERSION/gcc-$GCC_VERSION.tar.xz -q -P /tmp/
+	tar xf /tmp/gcc-$GCC_VERSION.tar.xz -C $BASE_DIR/src
+	echo "unpack gcc."
+	[ -d $BASE_DIR/src/gcc-$GCC_VERSION/ ] || exit 1
+else
+	echo "gcc-path ${GCC_PATH}."
+	[ -f $GCC_PATH/gcc/configure ] || exit 1
+	GCC_VERSION=$(cat $GCC_PATH/gcc/BASE-VER)
+	ln -sf $(realpath $GCC_PATH) $BASE_DIR/src/gcc-$GCC_VERSION
+fi
 
 ## download binutils
 wget --tries=3 https://ftpmirror.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
@@ -63,9 +78,34 @@ tar xf /tmp/zstd-$ZSTD_VERSION.tar.gz -C $BASE_DIR/src
 echo "unpack zstd."
 [ -d $BASE_DIR/src/zstd-$ZSTD_VERSION/ ] || exit 1
 
-for i in `find $PROJECT_DIR/patches/gcc/ -name *.patch -type f`; do
-	patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $i || exit 1
+gcc_common_patches=(
+	0001-fix-libcpp-in-32bit-android-build-failed.patch
+	0001-make-libphobos-use-system-zlib-in-android.patch
+)
+
+gcc_15_patches=(
+	0001-avoid-hardlink-in-Android.patch
+	0001-fix-build-for-Android.patch
+)
+
+gcc_16_patches=(
+	gcc-16-avoid-hardlink-in-Android.patch
+	gcc-16-fix-build-for-Android.patch
+)
+
+for i in "${gcc_common_patches[@]}"; do
+	patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $PROJECT_DIR/patches/gcc/$i || exit 1
 done
+
+if version_gt $GCC_VERSION "16"; then
+	for i in "${gcc_16_patches[@]}"; do
+		patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $PROJECT_DIR/patches/gcc/$i || exit 1
+	done
+elif version_gt $GCC_VERSION "15"; then
+	for i in "${gcc_15_patches[@]}"; do
+		patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $PROJECT_DIR/patches/gcc/$i || exit 1
+	done
+fi
 
 for i in `find $PROJECT_DIR/patches/binutils/ -name *.patch -type f`; do
 	patch -d $BASE_DIR/src/binutils-$BINUTILS_VERSION -p1 < $i || exit 1

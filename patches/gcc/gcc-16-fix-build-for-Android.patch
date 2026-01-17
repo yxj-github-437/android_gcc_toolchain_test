@@ -1,0 +1,449 @@
+From a5a2a0ca189fe530a254126a973f8f4b4a780502 Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Sat, 17 May 2025 15:35:34 +0800
+Subject: [PATCH 1/2] Android: Build for Android
+
+gcc/
+	* config.gcc: fix target aarch64-linux-android, arm-linux-androideabi,
+	  i686-linux-android, x86_64-linux-android
+	* config/linux-android.h: fix SPEC based on aarch64-linux-android-clang
+	* config/aarch64/aarch64-elf.h: Add Macro DEFAULT_ASM_SPEC
+	* config/aarch64/aarch64-linux.h: Add BIONIC_DYNAMIC_LINKER, fix SPEC for aarch64-android
+	* config/aarch64/t-linux-android: New file for aarch64-android muiltarch
+	* config/arm/elf.h: Add Macro DEFAULT_ASM_SPEC
+	* config/arm/linux-eabi.h: Add Macro ASM_SPEC
+	* config/arm/t-linux-androideabi: fix MULTILIB, MULTIARCH
+	* config/gcc/i386/t-linux-android: New file for adding i686-linux-android MULTIARCH
+	* config/gcc/i386/t-linux64-android: New file for adding x86_64-linux-android MULTILIB
+libgcc/
+	* config/i386/heap-trampoline.c: Allow x86-android platforms in heap trampolines.
+libphobos/
+	* libdruntime/core/stdc/stdio.d: for android api-level<23 only has symbol __sF
+	* libdruntime/gcc/sections/elf.d: for CRuntime_Bionic, SharedELF is true
+	* libdruntime/gcc/sections/package.d: CRuntime_Bionic platform is SectionsElf platform
+libstdc++-v3/
+	* config/os/bionic: fix CTYPE undefine
+---
+ gcc/config.gcc                               | 25 +++++++++++++-
+ gcc/config/aarch64/aarch64-elf.h             |  8 +++--
+ gcc/config/aarch64/aarch64-linux.h           | 36 +++++++++++++++++---
+ gcc/config/aarch64/t-linux-android           |  4 +++
+ gcc/config/arm/elf.h                         |  8 +++--
+ gcc/config/arm/linux-eabi.h                  | 16 +++++----
+ gcc/config/arm/t-linux-androideabi           |  6 ++--
+ gcc/config/i386/t-linux-android              |  1 +
+ gcc/config/i386/t-linux64-android            |  3 ++
+ gcc/config/linux-android.h                   |  9 +++--
+ libgcc/config/i386/heap-trampoline.c         |  2 +-
+ libphobos/libdruntime/core/stdc/stdio.d      |  9 +++--
+ libphobos/libdruntime/gcc/sections/elf.d     |  1 +
+ libphobos/libdruntime/gcc/sections/package.d |  1 +
+ libstdc++-v3/config/os/bionic/ctype_base.h   | 22 ++++++------
+ 15 files changed, 115 insertions(+), 36 deletions(-)
+ create mode 100644 gcc/config/aarch64/t-linux-android
+ create mode 100644 gcc/config/i386/t-linux-android
+ create mode 100644 gcc/config/i386/t-linux64-android
+
+diff --git a/gcc/config.gcc b/gcc/config.gcc
+index b671e11960b..1353b35f129 100644
+--- a/gcc/config.gcc
++++ b/gcc/config.gcc
+@@ -1276,14 +1276,18 @@ aarch64*-*-netbsd*)
+ 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
+ 	;;
+ aarch64*-*-linux*)
+-	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h"
++	tm_file="${tm_file} elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h"
+ 	tm_file="${tm_file} aarch64/aarch64-elf.h aarch64/aarch64-errata.h aarch64/aarch64-linux.h"
++	extra_options="${extra_options} linux-android.opt"
+ 	tmake_file="${tmake_file} aarch64/t-aarch64 aarch64/t-aarch64-linux"
+ 	tm_defines="${tm_defines}  TARGET_DEFAULT_ASYNC_UNWIND_TABLES=1"
+ 	case $target in
+ 	aarch64_be-*)
+ 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+ 		;;
++	*-android)
++        tmake_file="${tmake_file} aarch64/t-linux-android"
++        ;;
+ 	esac
+ 	aarch64_multilibs="${with_multilib_list}"
+ 	if test "$aarch64_multilibs" = "default"; then
+@@ -1515,6 +1519,7 @@ arm*-*-linux-* | arm*-*-uclinuxfdpiceabi)
+ 	case ${target} in
+ 	*-androideabi)
+ 	    tmake_file="$tmake_file arm/t-linux-androideabi"
++	    target_cpu_cname="generic-armv7-a"
+ 	    ;;
+ 	esac
+ 	# The EABI requires the use of __cxa_atexit.
+@@ -2062,6 +2067,12 @@ i[34567]86-*-linux* | i[34567]86-*-kfreebsd*-gnu | i[34567]86-*-gnu* | i[34567]8
+ 			tm_file="${tm_file} i386/x86-64.h i386/gnu-user-common.h i386/gnu-user64.h i386/linux-common.h i386/linux64.h"
+ 			tm_defines="${tm_defines} TARGET_BI_ARCH=1"
+ 			tmake_file="${tmake_file} i386/t-linux64"
++			# Define multilib configuration for i686-linux-android.
++            case ${target} in
++            *-android)
++                tmake_file="$tmake_file i386/t-linux64-android"
++                ;;
++            esac
+ 			x86_multilibs="${with_multilib_list}"
+ 			if test "$x86_multilibs" = "default"; then
+ 				x86_multilibs="m64,m32"
+@@ -2125,6 +2136,12 @@ x86_64-*-linux* | x86_64-*-kfreebsd*-gnu | x86_64-*-gnu*)
+ 		;;
+ 	esac
+ 	tmake_file="${tmake_file} i386/t-linux64"
++	# Define multilib configuration for x86_64-linux-android.
++    case ${target} in
++    *-android)
++        tmake_file="$tmake_file i386/t-linux64-android"
++        ;;
++    esac
+ 	x86_multilibs="${with_multilib_list}"
+ 	if test "$x86_multilibs" = "default"; then
+ 		case ${with_abi} in
+@@ -6074,6 +6091,12 @@ case ${target} in
+ 	i[34567]86-*-linux* | x86_64-*-linux*)
+ 		extra_objs="${extra_objs} gnu-property.o"
+ 		tmake_file="$tmake_file i386/t-linux i386/t-gnu-property"
++		# Define multilib configuration for i686-linux-android.
++        case ${target} in
++        *-android)
++            tmake_file="$tmake_file i386/t-linux-android"
++            ;;
++        esac
+ 		;;
+ 	i[34567]86-*-kfreebsd*-gnu | x86_64-*-kfreebsd*-gnu)
+ 		tmake_file="$tmake_file i386/t-kfreebsd"
+diff --git a/gcc/config/aarch64/aarch64-elf.h b/gcc/config/aarch64/aarch64-elf.h
+index 62f88f8893c..47c04d4cf66 100644
+--- a/gcc/config/aarch64/aarch64-elf.h
++++ b/gcc/config/aarch64/aarch64-elf.h
+@@ -132,8 +132,8 @@
+ #define ASM_MABI_SPEC	"%{mabi=lp64:}"
+ #endif
+ 
+-#ifndef ASM_SPEC
+-#define ASM_SPEC "\
++#ifndef DEFAULT_ASM_SPEC
++#define DEFAULT_ASM_SPEC "\
+ %{mbig-endian:-EB} \
+ %{mlittle-endian:-EL} \
+ %{menable-sysreg-checking} \
+@@ -141,6 +141,10 @@
+ ASM_MABI_SPEC
+ #endif
+ 
++#ifndef ASM_SPEC
++# define ASM_SPEC DEFAULT_ASM_SPEC
++#endif
++
+ #undef TYPE_OPERAND_FMT
+ #define TYPE_OPERAND_FMT	"%%%s"
+ 
+diff --git a/gcc/config/aarch64/aarch64-linux.h b/gcc/config/aarch64/aarch64-linux.h
+index 8f1ecc4e2d4..e63ca64868b 100644
+--- a/gcc/config/aarch64/aarch64-linux.h
++++ b/gcc/config/aarch64/aarch64-linux.h
+@@ -23,6 +23,9 @@
+ 
+ #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-aarch64%{mbig-endian:_be}%{mabi=ilp32:_ilp32}.so.1"
+ 
++#undef BIONIC_DYNAMIC_LINKER
++#define BIONIC_DYNAMIC_LINKER "/system/bin/linker64"
++
+ #undef MUSL_DYNAMIC_LINKER
+ #define MUSL_DYNAMIC_LINKER "/lib/ld-musl-aarch64%{mbig-endian:_be}%{mabi=ilp32:_ilp32}.so.1"
+ 
+@@ -31,10 +34,17 @@
+ 
+ #undef CC1_SPEC
+ #define CC1_SPEC GNU_USER_TARGET_CC1_SPEC ASAN_CC1_SPEC \
+-    AARCH64_ERRATA_COMPILE_SPEC
++    AARCH64_ERRATA_COMPILE_SPEC " " LINUX_OR_ANDROID_CC("", ANDROID_CC1_SPEC)
+ 
+ #undef CC1PLUS_SPEC
+-#define CC1PLUS_SPEC AARCH64_ERRATA_COMPILE_SPEC
++#define CC1PLUS_SPEC AARCH64_ERRATA_COMPILE_SPEC " " \
++		LINUX_OR_ANDROID_CC ("", ANDROID_CC1PLUS_SPEC)
++
++#undef ASM_SPEC
++#define ASM_SPEC \
++  DEFAULT_ASM_SPEC " " \
++  LINUX_OR_ANDROID_CC ("", ANDROID_ASM_SPEC)
++ 
+ 
+ #define CPP_SPEC "%{pthread:-D_REENTRANT}"
+ 
+@@ -52,21 +62,39 @@
+    %{%:sanitize(memtag-stack):%{!fsanitize-memtag-mode:-z memtag-stack -z memtag-mode=sync}} \
+    %{%:sanitize(memtag-stack):%{fsanitize-memtag-mode=*:-z memtag-stack -z memtag-mode=%}}"
+ 
++#undef LIB_SPEC
++#define LIB_SPEC							\
++  LINUX_OR_ANDROID_LD (GNU_USER_TARGET_LIB_SPEC,			\
++		    GNU_USER_TARGET_NO_PTHREADS_LIB_SPEC " " ANDROID_LIB_SPEC)
+ 
+-#define LINK_SPEC LINUX_TARGET_LINK_SPEC AARCH64_ERRATA_LINK_SPEC
++#define LINK_SPEC LINUX_TARGET_LINK_SPEC AARCH64_ERRATA_LINK_SPEC " " \
++		LINUX_OR_ANDROID_LD("", ANDROID_LINK_SPEC)
+ 
+ #define GNU_USER_TARGET_MATHFILE_SPEC \
+   "%{Ofast|ffast-math|funsafe-math-optimizations:%{!shared:crtfastmath.o%s}}"
+ 
++#ifdef TARGET_ANDROID
++#undef LIBGCC2_UNWIND_ATTRIBUTE
++#define LIBGCC2_UNWIND_ATTRIBUTE \
++   __attribute__((visibility("default")))
++#endif
++
++#undef	STARTFILE_SPEC
++#define STARTFILE_SPEC \
++  LINUX_OR_ANDROID_LD (GNU_USER_TARGET_STARTFILE_SPEC, ANDROID_STARTFILE_SPEC)
++
+ #undef ENDFILE_SPEC
+ #define ENDFILE_SPEC   \
+   GNU_USER_TARGET_MATHFILE_SPEC " " \
+-  GNU_USER_TARGET_ENDFILE_SPEC
++  LINUX_OR_ANDROID_LD( \
++  GNU_USER_TARGET_ENDFILE_SPEC, \
++  ANDROID_ENDFILE_SPEC)
+ 
+ #define TARGET_OS_CPP_BUILTINS()		\
+   do						\
+     {						\
+ 	GNU_USER_TARGET_OS_CPP_BUILTINS();	\
++	ANDROID_TARGET_OS_CPP_BUILTINS();  \
+     }						\
+   while (0)
+ 
+diff --git a/gcc/config/aarch64/t-linux-android b/gcc/config/aarch64/t-linux-android
+new file mode 100644
+index 00000000000..e326d055d96
+--- /dev/null
++++ b/gcc/config/aarch64/t-linux-android
+@@ -0,0 +1,4 @@
++MULTILIB_OSDIRNAMES = mabi.lp64=../lib64$(call if_multiarch,:aarch64$(AARCH_BE)-linux-android)
++MULTIARCH_DIRNAME = $(call if_multiarch,aarch64$(AARCH_BE)-linux-android)
++
++MULTILIB_OSDIRNAMES += mabi.ilp32=../libilp32$(call if_multiarch,:aarch64$(AARCH_BE)-linux-android_ilp32)
+diff --git a/gcc/config/arm/elf.h b/gcc/config/arm/elf.h
+index fb5ad86a57d..0e31b5bb1c7 100644
+--- a/gcc/config/arm/elf.h
++++ b/gcc/config/arm/elf.h
+@@ -56,8 +56,8 @@
+ #undef SUBSUBTARGET_EXTRA_SPECS
+ #define SUBSUBTARGET_EXTRA_SPECS
+ 
+-#ifndef ASM_SPEC
+-#define ASM_SPEC "\
++#ifndef DEFAULT_ASM_SPEC
++#define DEFAULT_ASM_SPEC "\
+ %{mbig-endian:-EB} \
+ %{mlittle-endian:-EL} \
+ %(asm_cpu_spec) \
+@@ -68,6 +68,10 @@
+ %(subtarget_extra_asm_spec)"
+ #endif
+ 
++#ifndef ASM_SPEC
++# define ASM_SPEC DEFAULT_ASM_SPEC
++#endif
++
+ /* The ARM uses @ are a comment character so we need to redefine
+    TYPE_OPERAND_FMT.  */
+ #undef  TYPE_OPERAND_FMT
+diff --git a/gcc/config/arm/linux-eabi.h b/gcc/config/arm/linux-eabi.h
+index 947ffc67c1c..cc7bbea5533 100644
+--- a/gcc/config/arm/linux-eabi.h
++++ b/gcc/config/arm/linux-eabi.h
+@@ -94,9 +94,8 @@
+ /* At this point, bpabi.h will have clobbered LINK_SPEC.  We want to
+    use the GNU/Linux version, not the generic BPABI version.  */
+ #undef  LINK_SPEC
+-#define LINK_SPEC EABI_LINK_SPEC					\
+-  LINUX_OR_ANDROID_LD (LINUX_TARGET_LINK_SPEC,				\
+-		       LINUX_TARGET_LINK_SPEC " " ANDROID_LINK_SPEC)
++#define LINK_SPEC EABI_LINK_SPEC " " LINUX_TARGET_LINK_SPEC \
++		LINUX_OR_ANDROID_LD ("", ANDROID_LINK_SPEC)
+ 
+ #undef  ASAN_CC1_SPEC
+ #define ASAN_CC1_SPEC "%{%:sanitize(address):-funwind-tables}"
+@@ -105,14 +104,17 @@
+ 
+ #undef  CC1_SPEC
+ #define CC1_SPEC							\
+-  LINUX_OR_ANDROID_CC (GNU_USER_TARGET_CC1_SPEC " " ASAN_CC1_SPEC " "	\
+-		       FDPIC_CC1_SPEC,					\
+-		       GNU_USER_TARGET_CC1_SPEC " " ASAN_CC1_SPEC " "	\
+-		       ANDROID_CC1_SPEC)
++  GNU_USER_TARGET_CC1_SPEC " " ASAN_CC1_SPEC  " " \
++  LINUX_OR_ANDROID_CC (FDPIC_CC1_SPEC, ANDROID_CC1_SPEC)
+ 
+ #define CC1PLUS_SPEC \
+   LINUX_OR_ANDROID_CC ("", ANDROID_CC1PLUS_SPEC)
+ 
++#undef ASM_SPEC
++#define ASM_SPEC \
++  DEFAULT_ASM_SPEC " " \
++  LINUX_OR_ANDROID_CC ("", ANDROID_ASM_SPEC)
++
+ #undef  LIB_SPEC
+ #define LIB_SPEC							\
+   LINUX_OR_ANDROID_LD (GNU_USER_TARGET_LIB_SPEC,			\
+diff --git a/gcc/config/arm/t-linux-androideabi b/gcc/config/arm/t-linux-androideabi
+index 8f1307c557f..9ffab1e1e9e 100644
+--- a/gcc/config/arm/t-linux-androideabi
++++ b/gcc/config/arm/t-linux-androideabi
+@@ -1,9 +1,11 @@
+-MULTILIB_OPTIONS     = march=armv7-a mthumb
+-MULTILIB_DIRNAMES    = armv7-a thumb
++MULTILIB_OPTIONS     =
++MULTILIB_DIRNAMES    =
+ MULTILIB_EXCEPTIONS  =
+ MULTILIB_MATCHES     =
+ MULTILIB_OSDIRNAMES  =
+ 
++MULTIARCH_DIRNAME = $(call if_multiarch,arm$(ARM_EB)-linux-androideabi$(if $(filter hard,$(with_float)),hf))
++
+ # The "special" multilib can be used to build native applications for Android,
+ # as opposed to native shared libraries that are then called via JNI.
+ #MULTILIB_OPTIONS    += tno-android-cc
+diff --git a/gcc/config/i386/t-linux-android b/gcc/config/i386/t-linux-android
+new file mode 100644
+index 00000000000..d17d060ea96
+--- /dev/null
++++ b/gcc/config/i386/t-linux-android
+@@ -0,0 +1 @@
++MULTIARCH_DIRNAME = $(call if_multiarch,i686-linux-android)
+diff --git a/gcc/config/i386/t-linux64-android b/gcc/config/i386/t-linux64-android
+new file mode 100644
+index 00000000000..c2e3c8ecb92
+--- /dev/null
++++ b/gcc/config/i386/t-linux64-android
+@@ -0,0 +1,3 @@
++MULTILIB_OSDIRNAMES = m64=../lib64$(call if_multiarch,:x86_64-linux-android)
++MULTILIB_OSDIRNAMES+= m32=../lib32$(call if_multiarch,:i686-linux-android)
++MULTILIB_OSDIRNAMES+= mx32=../libx32$(call if_multiarch,:x86_64-linux-androidx32)
+diff --git a/gcc/config/linux-android.h b/gcc/config/linux-android.h
+index f68acecb8d1..98be29f8c34 100644
+--- a/gcc/config/linux-android.h
++++ b/gcc/config/linux-android.h
+@@ -38,15 +38,18 @@
+   "%{" NOANDROID "|tno-android-ld:" LINUX_SPEC ";:" ANDROID_SPEC "}"
+ 
+ #define ANDROID_LINK_SPEC \
+-  "%{shared: -Bsymbolic}"
++  "%{shared: -Bsymbolic}  -z noexecstack -z relro -z now"
+ 
+ #define ANDROID_CC1_SPEC						\
+   "%{!mglibc:%{!muclibc:%{!mbionic: -mbionic}}} "			\
+   "%{!fno-pic:%{!fno-PIC:%{!fpic:%{!fPIC: -fPIC}}}}"
+ 
+ #define ANDROID_CC1PLUS_SPEC						\
+-  "%{!fexceptions:%{!fno-exceptions: -fno-exceptions}} "		\
+-  "%{!frtti:%{!fno-rtti: -fno-rtti}}"
++  "%{!fexceptions:%{!fno-exceptions: -fexceptions}} "		\
++  "%{!frtti:%{!fno-rtti: -frtti}}"
++
++#define ANDROID_ASM_SPEC \
++  "--noexecstack"
+ 
+ #define ANDROID_LIB_SPEC \
+   "%{!static: -ldl}"
+diff --git a/libgcc/config/i386/heap-trampoline.c b/libgcc/config/i386/heap-trampoline.c
+index a8637dc92d3..1b94b3ca9a7 100644
+--- a/libgcc/config/i386/heap-trampoline.c
++++ b/libgcc/config/i386/heap-trampoline.c
+@@ -141,7 +141,7 @@ allocate_trampoline_page (void)
+ {
+   void *page;
+ 
+-#if defined(__gnu_linux__)
++#if defined(__linux__) || defined(__gnu_hurd__)
+   page = mmap (0, getpagesize (), PROT_WRITE | PROT_EXEC,
+ 	       MAP_ANON | MAP_PRIVATE, 0, 0);
+ #elif __APPLE__
+diff --git a/libphobos/libdruntime/core/stdc/stdio.d b/libphobos/libdruntime/core/stdc/stdio.d
+index c9b6d7b6b7e..7deab13467e 100644
+--- a/libphobos/libdruntime/core/stdc/stdio.d
++++ b/libphobos/libdruntime/core/stdc/stdio.d
+@@ -1094,12 +1094,15 @@ else version (CRuntime_Bionic)
+ 
+     private extern shared FILE[3] __sF;
+ 
++    @property auto __stdin()() { return &__sF[0]; }
++    @property auto __stdout()() { return &__sF[1]; }
++    @property auto __stderr()() { return &__sF[2]; }
+     ///
+-    @property auto stdin()() { return &__sF[0]; }
++    alias __stdin stdin;
+     ///
+-    @property auto stdout()() { return &__sF[1]; }
++    alias __stdout stdout;
+     ///
+-    @property auto stderr()() { return &__sF[2]; }
++    alias __stderr stderr;
+ }
+ else version (CRuntime_Musl)
+ {
+diff --git a/libphobos/libdruntime/gcc/sections/elf.d b/libphobos/libdruntime/gcc/sections/elf.d
+index 60971cc4577..ba5a135bb4e 100644
+--- a/libphobos/libdruntime/gcc/sections/elf.d
++++ b/libphobos/libdruntime/gcc/sections/elf.d
+@@ -30,6 +30,7 @@ version (S390)    version = IBMZ_Any;
+ version (SystemZ) version = IBMZ_Any;
+ 
+ version (CRuntime_Glibc) enum SharedELF = true;
++else version (CRuntime_Bionic) enum SharedELF = true;
+ else version (CRuntime_Musl) enum SharedELF = true;
+ else version (FreeBSD) enum SharedELF = true;
+ else version (NetBSD) enum SharedELF = true;
+diff --git a/libphobos/libdruntime/gcc/sections/package.d b/libphobos/libdruntime/gcc/sections/package.d
+index a477db92c86..6099f385f72 100644
+--- a/libphobos/libdruntime/gcc/sections/package.d
++++ b/libphobos/libdruntime/gcc/sections/package.d
+@@ -23,6 +23,7 @@
+ module gcc.sections;
+ 
+ version (CRuntime_Glibc)  version = SectionsElf;
++version (CRuntime_Bionic) version = SectionsElf;
+ version (CRuntime_Musl)   version = SectionsElf;
+ version (CRuntime_UClibc) version = SectionsElf;
+ version (FreeBSD)         version = SectionsElf;
+diff --git a/libstdc++-v3/config/os/bionic/ctype_base.h b/libstdc++-v3/config/os/bionic/ctype_base.h
+index b28d018b696..224e26d153a 100644
+--- a/libstdc++-v3/config/os/bionic/ctype_base.h
++++ b/libstdc++-v3/config/os/bionic/ctype_base.h
+@@ -41,17 +41,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
+     // NB: Offsets into ctype<char>::_M_table force a particular size
+     // on the mask type. Because of this, we don't use an enum.
+     typedef char 		mask;
+-    static const mask upper    	= _U;
+-    static const mask lower 	= _L;
+-    static const mask alpha 	= _U | _L;
+-    static const mask digit 	= _N;
+-    static const mask xdigit 	= _X | _N;
+-    static const mask space 	= _S;
+-    static const mask print 	= _P | _U | _L | _N | _B;
+-    static const mask graph 	= _P | _U | _L | _N;
+-    static const mask cntrl 	= _C;
+-    static const mask punct 	= _P;
+-    static const mask alnum 	= _U | _L | _N;
++    static const mask upper	= _CTYPE_U;
++    static const mask lower 	= _CTYPE_L;
++    static const mask alpha 	= _CTYPE_U | _CTYPE_L;
++    static const mask digit 	= _CTYPE_N;
++    static const mask xdigit 	= _CTYPE_X | _CTYPE_N;
++    static const mask space 	= _CTYPE_S;
++    static const mask print 	= _CTYPE_P | _CTYPE_U | _CTYPE_L | _CTYPE_N | _CTYPE_B;
++    static const mask graph 	= _CTYPE_P | _CTYPE_U | _CTYPE_L | _CTYPE_N;
++    static const mask cntrl 	= _CTYPE_C;
++    static const mask punct 	= _CTYPE_P;
++    static const mask alnum 	= _CTYPE_U | _CTYPE_L | _CTYPE_N;
+ #if __cplusplus >= 201103L
+     static const mask blank 	= space;
+ #endif
+-- 
+2.43.0
+
