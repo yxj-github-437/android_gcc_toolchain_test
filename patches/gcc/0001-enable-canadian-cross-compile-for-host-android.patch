@@ -1,0 +1,100 @@
+From e57e0d69e56ed7dd43ec8011feca0bff3d9bee62 Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Mon, 19 Jan 2026 03:30:21 +0800
+Subject: [PATCH] enable canadian cross compile for host android
+
+---
+ configure                             |  5 ++++-
+ gcc/rust/Make-lang.in                 | 27 +++++++++++++++++++++++++--
+ libgrust/libformat_parser/Makefile.in | 24 +++++++++++++++++++++++-
+ 3 files changed, 52 insertions(+), 4 deletions(-)
+
+diff --git a/configure b/configure
+index bb0905df77f..ac7085f2782 100755
+--- a/configure
++++ b/configure
+@@ -10436,7 +10436,10 @@ $as_echo "$as_me: WARNING: --enable-host-shared required to build $language" >&2
+           # "'cargo' should build for the host system" is resolved:
+           { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: use of cargo not yet supported here in Canadian cross configurations" >&5
+ $as_echo "$as_me: WARNING: use of cargo not yet supported here in Canadian cross configurations" >&2;}
+-          have_cargo=no
++          case $host in
++            *android*);;
++            *) have_cargo=no;;
++          esac
+         else
+           # Assume that cargo-produced object files are compatible with what
+           # we're going to build here.
+diff --git a/gcc/rust/Make-lang.in b/gcc/rust/Make-lang.in
+index d8cacb695d2..c442f306d1d 100644
+--- a/gcc/rust/Make-lang.in
++++ b/gcc/rust/Make-lang.in
+@@ -545,5 +545,28 @@ rust/%.o: rust/metadata/%.cc
+ rust/libffi_polonius.a: \
+ 	rust/checks/errors/borrowck/ffi-polonius/Cargo.toml \
+ 	$(wildcard $(srcdir)/rust/checks/errors/borrowck/ffi-polonius/src/*)
+-	cd $(srcdir)/rust/checks/errors/borrowck/ffi-polonius/ && cargo build --offline --release --target-dir $(objdir)/rust/ffi-polonius
+-	cp rust/ffi-polonius/release/libffi_polonius.a rust/libffi_polonius.a
++	cd $(srcdir)/rust/checks/errors/borrowck/ffi-polonius/ && \
++	if test $(host) = $(build); then \
++	  cargo build --offline --release --target-dir $(objdir)/rust/ffi-polonius; \
++	  cp $(objdir)/rust/ffi-polonius/release/libffi_polonius.a $(objdir)/rust/libffi_polonius.a; \
++	else \
++	  case $(host) in \
++	  aarch64-*-android) \
++	    cargo build --offline --release --target-dir $(objdir)/rust/ffi-polonius --target=aarch64-linux-android; \
++	    cp $(objdir)/rust/ffi-polonius/aarch64-linux-android/release/libffi_polonius.a $(objdir)/rust/libffi_polonius.a; \
++	    ;; \
++	  arm-*-android*) \
++	    cargo build --offline --release --target-dir $(objdir)/rust/ffi-polonius --target=arm-linux-androideabi; \
++	    cp $(objdir)/rust/ffi-polonius/arm-linux-androideabi/release/libffi_polonius.a $(objdir)/rust/libffi_polonius.a; \
++	    ;; \
++	  i686-*-android) \
++	    cargo build --offline --release --target-dir $(objdir)/rust/ffi-polonius --target=i686-linux-android; \
++	    cp $(objdir)/rust/ffi-polonius/i686-linux-android/release/libffi_polonius.a $(objdir)/rust/libffi_polonius.a; \
++	    ;; \
++	  x86_64-*-android) \
++	    cargo build --offline --release --target-dir $(objdir)/rust/ffi-polonius --target=x86_64-linux-android; \
++	    cp $(objdir)/rust/ffi-polonius/x86_64-linux-android/release/libffi_polonius.a $(objdir)/rust/libffi_polonius.a; \
++	    ;; \
++	  *) ;; \
++	  esac; \
++	fi
+diff --git a/libgrust/libformat_parser/Makefile.in b/libgrust/libformat_parser/Makefile.in
+index b64ca2a4147..fcdf3b8e58c 100644
+--- a/libgrust/libformat_parser/Makefile.in
++++ b/libgrust/libformat_parser/Makefile.in
+@@ -433,7 +433,29 @@ all-local: $(LIBFORMAT_PARSER)
+ # TODO: Improve `cargo` invocation with host specific flags, possibly creating a $(CARGO) variable?
+ $(LIBFORMAT_PARSER): $(srcdir)/Cargo.toml $(srcdir)/src/*.rs
+ 	cd $(srcdir) && \
+-	cargo build --offline --target-dir $(RUST_BUILD_DIR)
++	if test $(host) = $(build); then \
++	  cargo build --offline --target-dir $(RUST_BUILD_DIR); \
++	else \
++	  case $(host) in \
++	  aarch64-*-android) \
++	    cargo build --offline --target-dir $(RUST_BUILD_DIR) --target=aarch64-linux-android; \
++	    ln -sf $(RUST_BUILD_DIR)/aarch64-linux-android/$(LIBFORMAT_PARSER) $(RUST_BUILD_DIR)/$(LIBFORMAT_PARSER); \
++	    ;; \
++	  arm-*-android*) \
++	    cargo build --offline --target-dir $(RUST_BUILD_DIR) --target=arm-linux-androideabi; \
++	    ln -sf $(RUST_BUILD_DIR)/arm-linux-androideabi/$(LIBFORMAT_PARSER) $(RUST_BUILD_DIR)/$(LIBFORMAT_PARSER); \
++	    ;; \
++	  i686-*-android) \
++	    cargo build --offline --target-dir $(RUST_BUILD_DIR) --target=i686-linux-android; \
++	    ln -sf $(RUST_BUILD_DIR)/i686-linux-android/$(LIBFORMAT_PARSER) $(RUST_BUILD_DIR)/$(LIBFORMAT_PARSER); \
++	    ;; \
++	  x86_64-*-android) \
++	    cargo build --offline --target-dir $(RUST_BUILD_DIR) --target=x86_64-linux-android; \
++	    ln -sf $(RUST_BUILD_DIR)/x86_64-linux-android/$(LIBFORMAT_PARSER) $(RUST_BUILD_DIR)/$(LIBFORMAT_PARSER); \
++	    ;; \
++	  *) ;; \
++	  esac; \
++	fi
+ 
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
+-- 
+2.43.0
+

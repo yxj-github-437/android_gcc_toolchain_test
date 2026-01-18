@@ -134,8 +134,9 @@ jobs:
 
       - name: install system build tools
         run: |
-            sudo apt-get update && \
-              sudo apt-get install -y gettext gdc llvm lld libgmp-dev libmpfr-dev libmpc-dev libisl-dev
+            sudo apt-get update
+            sudo apt-get install -y gettext gdc llvm lld libgmp-dev libmpfr-dev libmpc-dev libisl-dev \
+                automake autoconf libtool autogen bison flex build-essential rustup
 
       - name: checkout
         uses: actions/checkout@v5
@@ -152,8 +153,9 @@ jobs:
 
       - name: build
         run: |
-          ./build.sh --base-dir=/opt --jobs=4 --gcc-path=./gcc-src \
-            --binutils-version=2.44 \
+          rustup target add ${{ matrix.config.target }} 
+          ./build.sh --base-dir=/opt --jobs=4 --gcc-path=${{ github.workspace }}/gcc-src \
+            --binutils-version=2.44 --enable-languages=c,c++,fortran,d,rust \
             --target=${{ matrix.config.target }} --host=${{ matrix.config.target }}
 
       - name: upload artifact
