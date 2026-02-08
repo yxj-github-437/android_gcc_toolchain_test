@@ -1,9 +1,10 @@
 name: android gcc builds
 
 on:
+  schedule:
+    - cron: '0 0 1 * *'
+
   push:
-    schedule:
-      - cron: '0 0 1 * *'
     branches :
       - master
     tags-ignore: ['**']
