@@ -131,20 +131,22 @@ export AR=llvm-ar
 mkdir -p $BASE_DIR/prebuild; cd $BASE_DIR/prebuild
 ../src/gcc-$GCC_VERSION/configure --host=x86_64-linux-gnu --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=$ENABLE_LANGUAGES --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
-	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/opt/android-build/sysroot \
-	--disable-bootstrap  --prefix=$PREINSTALL_DIR --with-gmp=/usr --with-mpfr=/usr --with-mpc=/usr --with-isl=/usr
+	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/usr/sysroot \
+	--disable-bootstrap  --prefix=/usr --with-gmp=/usr --with-mpfr=/usr --with-mpc=/usr --with-isl=/usr
 make -j $JOBS || exit 1
-make install || exit 1
+DESTDIR=$PREINSTALL_DIR make install || exit 1
 rm -rf $BASE_DIR/prebuild/
 
-export PATH=$PREINSTALL_DIR/bin:$PATH
+cp -r /opt/android-build/sysroot $PREINSTALL_DIR/usr/sysroot || exit 1
+
+export PATH=$PREINSTALL_DIR/usr/bin:$PATH
 
 # build zstd
 CC=$HOST-gcc CFLAGS="-fPIC -O2" make lib -j $JOBS -C $BASE_DIR/src/zstd-$ZSTD_VERSION/ || exit 1
-mkdir -p $PREINSTALL_DIR/$HOST/include/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/*.h $PREINSTALL_DIR/$HOST/include/ || exit 1
-mkdir -p $PREINSTALL_DIR/$HOST/lib/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/libzstd.a $PREINSTALL_DIR/$HOST/lib/ || exit 1
+mkdir -p $PREINSTALL_DIR/usr/$HOST/include/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/*.h $PREINSTALL_DIR/usr/$HOST/include/ || exit 1
+mkdir -p $PREINSTALL_DIR/usr/$HOST/lib/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSION/lib/libzstd.a $PREINSTALL_DIR/usr/$HOST/lib/ || exit 1
 
-cat << EOF > $PREINSTALL_DIR/$HOST/lib/libunwind.a
+cat << EOF > $PREINSTALL_DIR/usr/$HOST/lib/libunwind.a
 INPUT(-lgcc)
 EOF
 
@@ -168,9 +170,16 @@ export gcc_cv_objdump=llvm-objdump
 make -j $JOBS || exit 1
 DESTDIR=/opt/gcc-install/ make install || exit 1
 
+### pack prebuild gcc
+rm -rf $PREINSTALL_DIR/usr/include/* $PREINSTALL_DIR/usr/lib/lib*.*a $PREINSTALL_DIR/usr/lib/bfd*
+rm -rf $PREINSTALL_DIR/usr/$TARGET/lib
+# strip
+cd $PREINSTALL_DIR/usr && find $TARGET bin lib lib64 libexec -type f -not -type l -not -path "*/*include*/*" -print -exec llvm-strip -R .comment --strip-unneeded {} \;
+cd $PREINSTALL_DIR && tar -cf $TARGET-gcc-$GCC_VERSION-prebuild.tar ./usr && xz -ze9f $TARGET-gcc-$GCC_VERSION-prebuild.tar
+
+
+### pack gcc
 cp -r /opt/android-build/sysroot/ /opt/gcc-install/usr/sysroot || exit 1
-
-
 rm -rf /opt/gcc-install/usr/include/* /opt/gcc-install/usr/lib/lib*.*a /opt/gcc-install/usr/lib/bfd*
 rm -rf /opt/gcc-install/usr/$TARGET/lib
 mkdir -p /opt/gcc-install/usr/$TARGET/include /opt/gcc-install/usr/$TARGET/lib

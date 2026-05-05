@@ -121,7 +121,7 @@ jobs:
             target: i686-linux-android,
             target_abi: x86
           }
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [prepare_ndk, build_android_extra]
     outputs:
       gcc-datestamp: ${{ steps.gcc_datestamp.outputs.datestamp }}
@@ -137,7 +137,10 @@ jobs:
         run: |
             sudo apt-get update
             sudo apt-get install -y gettext gdc llvm lld libgmp-dev libmpfr-dev libmpc-dev libisl-dev \
-                automake autoconf libtool autogen bison flex build-essential rustup
+                automake autoconf libtool autogen bison flex build-essential
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > /tmp/rustup-init.sh
+            /bin/sh /tmp/rustup-init.sh -y
+            source $HOME/.cargo/env
 
       - name: checkout
         uses: actions/checkout@v5
@@ -154,7 +157,7 @@ jobs:
 
       - name: build
         run: |
-          rustup target add ${{ matrix.config.target }} 
+          rustup target add ${{ matrix.config.target }}
           ./build.sh --base-dir=/opt --jobs=4 --gcc-path=${{ github.workspace }}/gcc-src \
             --binutils-version=2.44 --enable-languages=c,c++,fortran,d,rust \
             --target=${{ matrix.config.target }} --host=${{ matrix.config.target }}
@@ -163,7 +166,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.target }}-gcc
-          path: /opt/gcc-install/*.tar.xz
+          path: |
+            /opt/gcc-install/*.tar.xz
+            /opt/gcc-preinstall/*.tar.xz
 
   pre_release:
     runs-on: ubuntu-latest
@@ -179,6 +184,8 @@ jobs:
     - name: Create Pre-release
       uses: softprops/action-gh-release@v2
       with:
-        files: "*.tar.xz"
+        files: |
+          gcc-install/*.tar.xz
+          gcc-preinstall/*.tar.xz
         prerelease: true
         tag_name: gcc@${{ needs.build_gcc.outputs.gcc-datestamp }}
