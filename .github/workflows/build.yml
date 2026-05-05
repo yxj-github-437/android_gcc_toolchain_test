@@ -154,7 +154,7 @@ jobs:
 
       - name: build
         run: |
-          rustup target add ${{ matrix.config.target }} 
+          rustup target add ${{ matrix.config.target }}
           ./build.sh --base-dir=/opt --jobs=4 --gcc-path=${{ github.workspace }}/gcc-src \
             --binutils-version=2.44 --enable-languages=c,c++,fortran,d,rust \
             --target=${{ matrix.config.target }} --host=${{ matrix.config.target }}
@@ -163,7 +163,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.target }}-gcc
-          path: /opt/gcc-install/*.tar.xz
+          path: |
+            /opt/gcc-install/*.tar.xz
+            /opt/gcc-preinstall/*.tar.xz
 
   pre_release:
     runs-on: ubuntu-latest

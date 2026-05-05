@@ -149,7 +149,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.config.target }}-gcc
-          path: /opt/gcc-install/*.tar.xz
+          path: |
+            /opt/gcc-install/*.tar.xz
+            /opt/gcc-preinstall/*.tar.xz
 
   release:
     runs-on: ubuntu-latest
