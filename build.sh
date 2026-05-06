@@ -94,6 +94,7 @@ gcc_15_patches=(
 
 gcc_16_patches=(
 	0001-enable-canadian-cross-compile-for-host-android.patch
+	0001-add-flag-nostdinc-for-libstdc-build.patch
 	gcc-16-avoid-hardlink-in-Android.patch
 	gcc-16-fix-build-for-Android.patch
 )
@@ -172,7 +173,7 @@ DESTDIR=/opt/gcc-install/ make install || exit 1
 
 ### pack prebuild gcc
 rm -rf $PREINSTALL_DIR/usr/include/* $PREINSTALL_DIR/usr/lib/lib*.*a $PREINSTALL_DIR/usr/lib/bfd*
-rm -rf $PREINSTALL_DIR/usr/$TARGET/lib
+rm -rf $PREINSTALL_DIR/usr/$TARGET/lib $PREINSTALL_DIR/usr/$TARGET/include
 # strip
 cd $PREINSTALL_DIR/usr && find $TARGET bin lib lib64 libexec -type f -not -type l -not -path "*/*include*/*" -print -exec llvm-strip -R .comment --strip-unneeded {} \;
 cd $PREINSTALL_DIR && tar -cf $TARGET-gcc-$GCC_VERSION-prebuild.tar ./usr && xz -ze9f $TARGET-gcc-$GCC_VERSION-prebuild.tar

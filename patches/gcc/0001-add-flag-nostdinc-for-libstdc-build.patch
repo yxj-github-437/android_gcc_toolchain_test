@@ -1,0 +1,151 @@
+From b1b70e7db03e2f6cff7b7bbf253b7cac5bc18cf8 Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Thu, 7 May 2026 01:20:02 +0800
+Subject: [PATCH] add flag -nostdinc++ for libstdc++ build
+
+---
+ libstdc++-v3/src/c++11/Makefile.am | 2 +-
+ libstdc++-v3/src/c++11/Makefile.in | 2 +-
+ libstdc++-v3/src/c++20/Makefile.am | 2 +-
+ libstdc++-v3/src/c++20/Makefile.in | 2 +-
+ libstdc++-v3/src/c++23/Makefile.am | 2 +-
+ libstdc++-v3/src/c++23/Makefile.in | 2 +-
+ libstdc++-v3/src/c++26/Makefile.am | 2 +-
+ libstdc++-v3/src/c++26/Makefile.in | 2 +-
+ libstdc++-v3/src/c++98/Makefile.am | 2 +-
+ libstdc++-v3/src/c++98/Makefile.in | 2 +-
+ 10 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/libstdc++-v3/src/c++11/Makefile.am b/libstdc++-v3/src/c++11/Makefile.am
+index d29efacdcda..4174dd1ea0e 100644
+--- a/libstdc++-v3/src/c++11/Makefile.am
++++ b/libstdc++-v3/src/c++11/Makefile.am
+@@ -206,7 +206,7 @@ endif
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++11 \
++	-std=gnu++11 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+diff --git a/libstdc++-v3/src/c++11/Makefile.in b/libstdc++-v3/src/c++11/Makefile.in
+index bd684bb4209..40a91edb734 100644
+--- a/libstdc++-v3/src/c++11/Makefile.in
++++ b/libstdc++-v3/src/c++11/Makefile.in
+@@ -564,7 +564,7 @@ sources = \
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++11 \
++	-std=gnu++11 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+diff --git a/libstdc++-v3/src/c++20/Makefile.am b/libstdc++-v3/src/c++20/Makefile.am
+index 5182d51b9fa..cd6ea46a2db 100644
+--- a/libstdc++-v3/src/c++20/Makefile.am
++++ b/libstdc++-v3/src/c++20/Makefile.am
+@@ -93,7 +93,7 @@ endif
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++20 \
++	-std=gnu++20 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++20/Makefile.in b/libstdc++-v3/src/c++20/Makefile.in
+index 33e3ba21b52..a224e3f04d6 100644
+--- a/libstdc++-v3/src/c++20/Makefile.in
++++ b/libstdc++-v3/src/c++20/Makefile.in
+@@ -453,7 +453,7 @@ sources = tzdb.cc format.cc atomic.cc clock.cc syncbuf.cc
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++20 \
++	-std=gnu++20 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++23/Makefile.am b/libstdc++-v3/src/c++23/Makefile.am
+index 5b2812abd22..7fb7f52c0c4 100644
+--- a/libstdc++-v3/src/c++23/Makefile.am
++++ b/libstdc++-v3/src/c++23/Makefile.am
+@@ -133,7 +133,7 @@ std.compat.o: std.compat.cc std.o
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++23 \
++	-std=gnu++23 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++23/Makefile.in b/libstdc++-v3/src/c++23/Makefile.in
+index 75da9c008ab..cb59d5a6dbc 100644
+--- a/libstdc++-v3/src/c++23/Makefile.in
++++ b/libstdc++-v3/src/c++23/Makefile.in
+@@ -492,7 +492,7 @@ MODULES_FLAGS = -isystem ${glibcxx_srcdir}/include/backward -fmodules \
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++23 \
++	-std=gnu++23 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++26/Makefile.am b/libstdc++-v3/src/c++26/Makefile.am
+index f1acc3dd64c..e2b602531b5 100644
+--- a/libstdc++-v3/src/c++26/Makefile.am
++++ b/libstdc++-v3/src/c++26/Makefile.am
+@@ -54,7 +54,7 @@ endif
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++26 \
++	-std=gnu++26 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++26/Makefile.in b/libstdc++-v3/src/c++26/Makefile.in
+index 13c3a03b236..253403b7905 100644
+--- a/libstdc++-v3/src/c++26/Makefile.in
++++ b/libstdc++-v3/src/c++26/Makefile.in
+@@ -446,7 +446,7 @@ sources = \
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++26 \
++	-std=gnu++26 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS) \
+diff --git a/libstdc++-v3/src/c++98/Makefile.am b/libstdc++-v3/src/c++98/Makefile.am
+index e816356d357..5ca73678482 100644
+--- a/libstdc++-v3/src/c++98/Makefile.am
++++ b/libstdc++-v3/src/c++98/Makefile.am
+@@ -206,7 +206,7 @@ parallel_settings.o: parallel_settings.cc
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++98 \
++	-std=gnu++98 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+diff --git a/libstdc++-v3/src/c++98/Makefile.in b/libstdc++-v3/src/c++98/Makefile.in
+index c8df597f40d..6e88cfd29d9 100644
+--- a/libstdc++-v3/src/c++98/Makefile.in
++++ b/libstdc++-v3/src/c++98/Makefile.in
+@@ -540,7 +540,7 @@ PARALLEL_FLAGS = -D_GLIBCXX_PARALLEL
+ # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
+ # as the occasion calls for it.
+ AM_CXXFLAGS = \
+-	-std=gnu++98 \
++	-std=gnu++98 -nostdinc++ \
+ 	$(glibcxx_lt_pic_flag) $(glibcxx_compiler_shared_flag) \
+ 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
+ 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+-- 
+2.43.0
+
