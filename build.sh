@@ -11,6 +11,10 @@ JBOS=1
 TARGET=aarch64-linux-android
 HOST=aarch64-linux-android
 
+major() { echo $1 | cut -d. -f1; }
+minor() { echo $1 | cut -d. -f2; }
+revision() { echo $1 | cut -d. -f3; }
+
 version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n1)" != "$1"; }
 version_lt() { test "$(printf '%s\n' "$@" | sort -V | head -n1)" == "$1"; }
 version_eq() { test "$1" == "$2"; }
@@ -72,9 +76,16 @@ else
 fi
 
 ## download binutils
-wget --tries=3 https://ftpmirror.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
-tar xf /tmp/binutils-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
-echo "unpack binutils."
+if [ $(expr $(minor $BINUTILS_VERSION) % 2) == 0 ] && $(version_gt $BINUTILS_VERSION 2.44); then
+	wget --tries=3 https://ftpmirror.gnu.org/gnu/binutils/binutils-with-gold-$BINUTILS_VERSION.tar.xz -q -P /tmp/
+	tar xf /tmp/binutils-with-gold-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
+	echo "unpack binutils."
+	ln -sf binutils-with-gold-$BINUTILS_VERSION $BASE_DIR/src/binutils-$BINUTILS_VERSION
+else
+	wget --tries=3 https://ftpmirror.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
+	tar xf /tmp/binutils-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
+	echo "unpack binutils."
+fi
 [ -d $BASE_DIR/src/binutils-$BINUTILS_VERSION/ ] || exit 1
 
 wget --tries=3 https://github.com/facebook/zstd/releases/download/v$ZSTD_VERSION/zstd-$ZSTD_VERSION.tar.gz -q -P /tmp/
@@ -99,26 +110,37 @@ gcc_16_patches=(
 	gcc-16-fix-build-for-Android.patch
 )
 
-for i in "${gcc_common_patches[@]}"; do
+gcc_patches=(${gcc_common_patches[@]})
+if version_gt $GCC_VERSION "16"; then
+	gcc_patches=(${gcc_patches[@]} ${gcc_16_patches[@]})
+elif version_gt $GCC_VERSION "15"; then
+	gcc_patches=(${gcc_patches[@]} ${gcc_15_patches[@]})
+fi
+
+for i in "${gcc_patches[@]}"; do
 	patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $PROJECT_DIR/patches/gcc/$i || exit 1
 done
 
-if version_gt $GCC_VERSION "16"; then
-	for i in "${gcc_16_patches[@]}"; do
-		patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $PROJECT_DIR/patches/gcc/$i || exit 1
-	done
-elif version_gt $GCC_VERSION "15"; then
-	for i in "${gcc_15_patches[@]}"; do
-		patch -d $BASE_DIR/src/gcc-$GCC_VERSION -p1 < $PROJECT_DIR/patches/gcc/$i || exit 1
-	done
+binutils_common_patches=(
+	gas-decrease-input-buffer-size.patch
+	no-hardlink.patch
+)
+
+binutils_patches=(${binutils_common_patches[@]})
+if version_gt $BINUTILS_VERSION "2.45"; then
+	binutils_patches=(
+		${binutils_patches[@]}
+		0001-zlib-uncompress2-compat.patch
+	)
 fi
 
-for i in `find $PROJECT_DIR/patches/binutils/ -name *.patch -type f`; do
-	patch -d $BASE_DIR/src/binutils-$BINUTILS_VERSION -p1 < $i || exit 1
+for i in "${binutils_patches[@]}"; do
+	patch -d $BASE_DIR/src/binutils-$BINUTILS_VERSION -p1 < $PROJECT_DIR/patches/binutils/$i || exit 1
 done
 
-for dir in bfd binutils elfcpp gas ld libctf libsframe opcodes; do
-	ln -srf $BASE_DIR/src/binutils-$BINUTILS_VERSION/$dir $BASE_DIR/src/gcc-$GCC_VERSION/$dir
+for dir in bfd binutils elfcpp gas ld gold libctf libsframe opcodes; do
+	[ -d $BASE_DIR/src/binutils-$BINUTILS_VERSION/$dir ] && \
+		ln -srf $BASE_DIR/src/binutils-$BINUTILS_VERSION/$dir $BASE_DIR/src/gcc-$GCC_VERSION/$dir
 done
 
 
@@ -164,6 +186,7 @@ fi
 ## build
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
 export gcc_cv_objdump=llvm-objdump
+export ac_cv_func_ffsll=yes
 ../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=$ENABLE_LANGUAGES --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
 	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/usr --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/usr/sysroot \

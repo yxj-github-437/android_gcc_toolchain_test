@@ -159,7 +159,7 @@ jobs:
         run: |
           rustup target add ${{ matrix.config.target }}
           ./build.sh --base-dir=/opt --jobs=4 --gcc-path=${{ github.workspace }}/gcc-src \
-            --binutils-version=2.44 --enable-languages=c,c++,fortran,d,rust \
+            --binutils-version=2.46 --enable-languages=c,c++,fortran,d,rust \
             --target=${{ matrix.config.target }} --host=${{ matrix.config.target }}
 
       - name: upload artifact
