@@ -60,10 +60,11 @@ jobs:
           restore-keys: ${{ runner.os }}-sysroot-${{ matrix.target_abi }}-
 
       - name: restore ndk
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /opt/ndk
           key: ${{ runner.os }}-ndk-r${{ env.NDK_VERSION }}
+          fail-on-cache-miss: 'true'
         if: steps.sysroot-cache.outputs.cache-hit != 'true'
 
       - name: checkout libandroid-extra
@@ -127,22 +128,25 @@ jobs:
     container: ubuntu:20.04
     needs: [split-tag, prepare_ndk, build_android_extra]
     steps:
+      - name: container tools update
+        run: |
+          apt-get update
+          echo "Asia\nShanghai" | apt-get install -y tzdata software-properties-common curl wget zstd
+          apt-add-repository ppa:git-core/ppa && apt-get update
+          apt-get install -y git
+
       - name: restore sysroot
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /opt/android-build/sysroot
           key: ${{ runner.os }}-sysroot-${{ matrix.config.target_abi }}-${{ env.LIBANDROID_COMMIT_ID }}
-          restore-keys: ${{ runner.os }}-sysroot-${{ matrix.config.target_abi }}-
+          fail-on-cache-miss: 'true'
 
       - name: install system build tools
         run: |
-            apt-get update
-            echo "Asia\nShanghai" | apt-get install -y tzdata
             apt-get install -y automake autoconf libtool autogen bison flex build-essential\
               texinfo gettext gdc llvm lld libgmp-dev libmpfr-dev libmpc-dev libisl-dev \
-              libzstd-dev software-properties-common curl wget
-            apt-add-repository ppa:git-core/ppa && apt-get update
-            apt-get install -y git
+              libzstd-dev
 
       - name: checkout code
         uses: actions/checkout@v5
