@@ -102,13 +102,15 @@ gcc_common_patches=(
 gcc_15_patches=(
 	0001-avoid-hardlink-in-Android.patch
 	0001-fix-build-for-Android.patch
+	0001-fix-cross-gccrs-install.patch
 )
 
 gcc_16_patches=(
+	gcc-16-fix-build-for-Android.patch
+	gcc-16-avoid-hardlink-in-Android.patch
 	0001-enable-canadian-cross-compile-for-host-android.patch
 	0001-add-flag-nostdinc-for-libstdc-build.patch
-	gcc-16-avoid-hardlink-in-Android.patch
-	gcc-16-fix-build-for-Android.patch
+	0001-fix-cross-gccrs-install.patch
 )
 
 gcc_patches=(${gcc_common_patches[@]})
@@ -144,6 +146,13 @@ for dir in bfd binutils elfcpp gas ld gold libctf libsframe opcodes; do
 		ln -srf $BASE_DIR/src/binutils-$BINUTILS_VERSION/$dir $BASE_DIR/src/gcc-$GCC_VERSION/$dir
 done
 
+
+## download gcc dependence lib and patch
+cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
+for i in `find $PROJECT_DIR/patches/gettext/ -name *.patch -type f`; do
+	patch -d $BASE_DIR/src/gcc-$GCC_VERSION/gettext -p1 < $i || exit 1
+done
+
 ## set COMPILER FLAGS
 export LDFLAGS="-fuse-ld=lld"
 
@@ -175,11 +184,6 @@ mkdir -p $PREINSTALL_DIR/usr/$HOST/lib/ && cp -r $BASE_DIR/src/zstd-$ZSTD_VERSIO
 cat << EOF > $PREINSTALL_DIR/usr/$HOST/lib/libunwind.a
 INPUT(-lgcc)
 EOF
-
-cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
-for i in `find $PROJECT_DIR/patches/gettext/ -name *.patch -type f`; do
-	patch -d $BASE_DIR/src/gcc-$GCC_VERSION/gettext -p1 < $i || exit 1
-done
 
 if [ -f $BASE_DIR/src/gcc-$GCC_VERSION/libgrust/libformat_parser/.cargo/config.toml ]; then
 	echo [target.$HOST] >> $BASE_DIR/src/gcc-$GCC_VERSION/libgrust/libformat_parser/.cargo/config.toml

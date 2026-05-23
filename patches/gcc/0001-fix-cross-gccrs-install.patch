@@ -1,0 +1,54 @@
+From cf7d81b13189e1f6e20274af934af7221c7558f4 Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Sun, 24 May 2026 00:46:03 +0800
+Subject: [PATCH] fix cross gccrs install
+
+---
+ gcc/rust/Make-lang.in | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/gcc/rust/Make-lang.in b/gcc/rust/Make-lang.in
+index 147a18e30ff..13354b05c5f 100644
+--- a/gcc/rust/Make-lang.in
++++ b/gcc/rust/Make-lang.in
+@@ -59,6 +59,11 @@ gccrs$(exeext): $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
+ 	  $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+ 	  $(EXTRA_GCC_LIBS) $(LIBS)
+ 
++# Create a version of the gccrs driver which calls the cross-compiler.
++gccrs-cross$(exeext): gccrs$(exeext)
++	-rm -f gccrs-cross$(exeext)
++	cp gccrs$(exeext) gccrs-cross$(exeext)
++
+ # List of host object files used by the rust language - files for translation from the parse tree
+ # to GENERIC
+ # The compiler proper, not driver
+@@ -285,7 +290,7 @@ check_rust_parallelize = 10
+ # was specified as a configure option.
+ rust.srcextra:
+ 
+-rust.all.cross: gccrs$(exeext)
++rust.all.cross: gccrs-cross$(exeext)
+ 
+ # idk what this does but someone used it
+ rust.start.encap: gccrs$(exeext)
+@@ -356,9 +361,13 @@ rust.install-common: installdirs
+ #	fi
+ 	-rm -f $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
+ 	$(INSTALL_PROGRAM) gccrs$(exeext) $(DESTDIR)$(bindir)/$(GCCRS_INSTALL_NAME)$(exeext)
+-	rm -f $(DESTDIR)$(bindir)/$(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
+-	( cd $(DESTDIR)$(bindir) && \
+-      $(LN_S) -r $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext) ); \
++	-if test -f gccrs-cross$(exeext); then \
++	  :; \
++	else \
++	  rm -f $(DESTDIR)$(bindir)/$(GCCRS_TARGET_INSTALL_NAME)$(exeext); \
++	  ( cd $(DESTDIR)$(bindir) && \
++	    $(LN_S) -r $(GCCRS_INSTALL_NAME)$(exeext) $(GCCRS_TARGET_INSTALL_NAME)$(exeext) ); \
++	fi
+ 
+ # Install headers needed for plugins.
+ rust.install-plugin:
+-- 
+2.53.0
+
