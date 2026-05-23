@@ -167,7 +167,7 @@ mkdir -p $BASE_DIR/prebuild; cd $BASE_DIR/prebuild
 ../src/gcc-$GCC_VERSION/configure -v --host=x86_64-linux-gnu --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=$ENABLE_LANGUAGES --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
 	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/usr/sysroot \
-	--disable-bootstrap  --prefix=/usr --with-gmp=/usr --with-mpfr=/usr --with-mpc=/usr --with-isl=/usr
+	--disable-bootstrap  --prefix=/usr
 make -j $JOBS || exit 1
 DESTDIR=$PREINSTALL_DIR make install || exit 1
 rm -rf $BASE_DIR/prebuild/
