@@ -71,13 +71,13 @@ jobs:
         with:
           repository: yxj-github-437/libandroid-extra
           path: libandroid-extra-src
+          ref: ${{ env.LIBANDROID_COMMIT_ID }}
         if: steps.sysroot-cache.outputs.cache-hit != 'true'
 
       - name: build
         run: |
-          cd libandroid-extra-src
-          git checkout ${{ env.LIBANDROID_COMMIT_ID }}
-          cmake -B ${{ github.workspace }}/libandroid-extra-build \
+          cmake -S ${{ github.workspace }}/libandroid-extra-src \
+            -B ${{ github.workspace }}/libandroid-extra-build \
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DANDROID_PLATFORM=android-21 -DANDROID_ABI=${{ matrix.target_abi }} \
             -DANDROID_ARM_MODE=arm \
@@ -123,7 +123,8 @@ jobs:
             target: i686-linux-android,
             target_abi: x86
           }
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container: ubuntu:20.04
     needs: [split-tag, prepare_ndk, build_android_extra]
     steps:
       - name: restore sysroot
@@ -135,15 +136,21 @@ jobs:
 
       - name: install system build tools
         run: |
-            sudo apt-get update
-            sudo apt-get install -y gettext gdc llvm lld libgmp-dev libmpfr-dev libmpc-dev libisl-dev
+            apt-get update
+            echo "Asia\nShanghai" | apt-get install -y tzdata
+            apt-get install -y automake autoconf libtool autogen bison flex build-essential\
+              texinfo gettext gdc llvm lld libgmp-dev libmpfr-dev libmpc-dev libisl-dev \
+              libzstd-dev software-properties-common curl wget
+            apt-add-repository ppa:git-core/ppa && apt-get update
+            apt-get install -y git
 
       - name: checkout code
         uses: actions/checkout@v5
 
       - name: build
         run: |
-          ./build.sh --base-dir=/opt/ --jobs=4 --gcc-version=${{ needs.split-tag.outputs.gcc-version }} --binutils-version=2.46 \
+          ./build.sh --base-dir=/opt/ --jobs=$(nproc) \
+            --gcc-version=${{ needs.split-tag.outputs.gcc-version }} --binutils-version=2.46 \
             --target=${{ matrix.config.target }} --host=${{ matrix.config.target }}
 
       - name: upload artifact
