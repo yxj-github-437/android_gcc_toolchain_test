@@ -144,6 +144,8 @@ for dir in bfd binutils elfcpp gas ld gold libctf libsframe opcodes; do
 		ln -srf $BASE_DIR/src/binutils-$BINUTILS_VERSION/$dir $BASE_DIR/src/gcc-$GCC_VERSION/$dir
 done
 
+## set COMPILER FLAGS
+export LDFLAGS="-fuse-ld=lld"
 
 ## prebuild
 PREINSTALL_DIR=/opt/gcc-preinstall
@@ -153,7 +155,7 @@ export LD=ld.lld
 export AR=llvm-ar
 
 mkdir -p $BASE_DIR/prebuild; cd $BASE_DIR/prebuild
-../src/gcc-$GCC_VERSION/configure --host=x86_64-linux-gnu --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=$ENABLE_LANGUAGES --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
+../src/gcc-$GCC_VERSION/configure -v --host=x86_64-linux-gnu --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=$ENABLE_LANGUAGES --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
 	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/usr/sysroot \
 	--disable-bootstrap  --prefix=/usr --with-gmp=/usr --with-mpfr=/usr --with-mpc=/usr --with-isl=/usr
@@ -188,7 +190,7 @@ fi
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
 export gcc_cv_objdump=llvm-objdump
 export ac_cv_func_ffsll=yes
-../src/gcc-$GCC_VERSION/configure --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=$ENABLE_LANGUAGES --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
+../src/gcc-$GCC_VERSION/configure -v --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=$ENABLE_LANGUAGES --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
 	--disable-tls --disable-shared --with-pic --enable-checking=release --disable-rpath --enable-new-dtags --enable-ld=default --enable-gold --disable-libssp --disable-libitm --enable-gnu-indirect-function --disable-relro --disable-werror --enable-libphobos-checking=release \
 	--enable-version-specific-runtime-libs --with-build-config=bootstrap-lto-lean --enable-link-serialization=2 --disable-vtable-verify --enable-plugin --prefix=/usr --with-build-sysroot=/opt/android-build/sysroot --with-sysroot=/usr/sysroot \
 	--disable-bootstrap
