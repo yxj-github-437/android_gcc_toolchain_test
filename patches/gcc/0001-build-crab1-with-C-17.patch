@@ -1,0 +1,25 @@
+From 10dea50f8469c5c1fb7b039956d12b5db4918afa Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Sat, 23 May 2026 21:05:50 +0800
+Subject: [PATCH] build crab1 with C++17
+
+---
+ gcc/rust/Make-lang.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gcc/rust/Make-lang.in b/gcc/rust/Make-lang.in
+index 6d9fa1d022e..147a18e30ff 100644
+--- a/gcc/rust/Make-lang.in
++++ b/gcc/rust/Make-lang.in
+@@ -454,7 +454,7 @@ CFLAGS-rust/rust-lex.o += $(RUST_INCLUDES)
+ CFLAGS-rust/rust-parse.o += $(RUST_INCLUDES)
+ CFLAGS-rust/rust-session-manager.o += $(RUST_INCLUDES)
+ 
+-RUST_CXXFLAGS = $(CXXFLAGS)
++RUST_CXXFLAGS = $(CXXFLAGS) -std=gnu++17
+ 
+ # build all rust/lex files in rust folder, add cross-folder includes
+ rust/%.o: rust/lex/%.cc
+-- 
+2.53.0
+

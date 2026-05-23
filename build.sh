@@ -4,7 +4,7 @@ BASE_DIR=$(pwd)
 PROJECT_DIR=$(pwd)
 GCC_VERSION=15.2.0
 GCC_PATH=
-ENABLE_LANGUAGES=c,c++,fortran,d
+ENABLE_LANGUAGES=c,c++,d,fortran
 BINUTILS_VERSION=2.45
 ZSTD_VERSION=1.5.7
 JBOS=1
@@ -96,6 +96,7 @@ echo "unpack zstd."
 gcc_common_patches=(
 	0001-fix-libcpp-in-32bit-android-build-failed.patch
 	0001-make-libphobos-use-system-zlib-in-android.patch
+	0001-build-crab1-with-C-17.patch
 )
 
 gcc_15_patches=(
