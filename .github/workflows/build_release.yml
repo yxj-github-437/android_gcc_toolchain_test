@@ -125,7 +125,10 @@ jobs:
             target_abi: x86
           }
     runs-on: ubuntu-latest
-    container: ubuntu:20.04
+    container:
+      image: ubuntu:20.04
+      volumes:
+        - /opt:/opt
     needs: [split-tag, prepare_ndk, build_android_extra]
     steps:
       - name: container tools update
