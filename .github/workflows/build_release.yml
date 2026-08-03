@@ -164,7 +164,7 @@ jobs:
         run: |
           export PATH=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
           ./build.sh --base-dir=/opt/ --jobs=$(nproc) \
-            --gcc-version=${{ needs.split-tag.outputs.gcc-version }} --binutils-version=2.46 \
+            --gcc-version=${{ needs.split-tag.outputs.gcc-version }} --binutils-version=2.46.1 \
             --target=${{ matrix.config.target }} --host=${{ matrix.config.target }}
 
       - name: upload artifact

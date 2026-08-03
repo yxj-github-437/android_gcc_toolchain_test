@@ -178,7 +178,7 @@ jobs:
           rustup target add ${{ matrix.config.target }}
           export PATH=/opt/ndk/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH
           ./build.sh --base-dir=/opt --jobs=$(nproc) --gcc-path=./gcc-src \
-            --binutils-version=2.46 --enable-languages=c,c++,d,fortran,rust \
+            --binutils-version=2.46.1 --enable-languages=c,c++,d,fortran,rust \
             --target=${{ matrix.config.target }} --host=${{ matrix.config.target }}
 
       - name: upload artifact

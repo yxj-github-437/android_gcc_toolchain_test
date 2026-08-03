@@ -77,12 +77,12 @@ fi
 
 ## download binutils
 if [ $(expr $(minor $BINUTILS_VERSION) % 2) == 0 ] && $(version_gt $BINUTILS_VERSION 2.44); then
-	wget --tries=3 https://ftpmirror.gnu.org/gnu/binutils/binutils-with-gold-$BINUTILS_VERSION.tar.xz -q -P /tmp/
+	wget --tries=3 https://ftp.gnu.org/gnu/binutils/binutils-with-gold-$BINUTILS_VERSION.tar.xz -q -P /tmp/
 	tar xf /tmp/binutils-with-gold-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
 	echo "unpack binutils."
 	ln -sf binutils-with-gold-$BINUTILS_VERSION $BASE_DIR/src/binutils-$BINUTILS_VERSION
 else
-	wget --tries=3 https://ftpmirror.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
+	wget --tries=3 https://ftp.gnu.org/gnu/binutils/binutils-$BINUTILS_VERSION.tar.xz -q -P /tmp/
 	tar xf /tmp/binutils-$BINUTILS_VERSION.tar.xz -C $BASE_DIR/src
 	echo "unpack binutils."
 fi
