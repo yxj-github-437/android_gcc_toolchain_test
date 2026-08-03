@@ -97,6 +97,7 @@ gcc_common_patches=(
 	0001-fix-libcpp-in-32bit-android-build-failed.patch
 	0001-make-libphobos-use-system-zlib-in-android.patch
 	0001-build-crab1-with-C-17.patch
+	0001-disable-d-when-build-gettext.patch
 )
 
 gcc_15_patches=(
