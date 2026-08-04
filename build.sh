@@ -98,6 +98,7 @@ gcc_common_patches=(
 	0001-make-libphobos-use-system-zlib-in-android.patch
 	0001-build-crab1-with-C-17.patch
 	0001-disable-d-when-build-gettext.patch
+	0001-fix-limits.h-some-macros.patch
 )
 
 gcc_15_patches=(

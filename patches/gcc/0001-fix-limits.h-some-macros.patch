@@ -1,0 +1,45 @@
+From 14caa3d265165d7d62665f24a322ac7fc68bb347 Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Tue, 4 Aug 2026 20:03:11 +0800
+Subject: [PATCH] fix <limits.h> some macros
+
+---
+ gcc/glimits.h | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/gcc/glimits.h b/gcc/glimits.h
+index 2098016ef8e..b434f009647 100644
+--- a/gcc/glimits.h
++++ b/gcc/glimits.h
+@@ -99,7 +99,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+ #undef ULONG_MAX
+ #define ULONG_MAX (LONG_MAX * 2UL + 1UL)
+ 
+-#if defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
++/* C99 5.2.4.2.1: Added long long.
++   C++11 18.3.3.2: same contents as the Standard C Library header <limits.h>.
++ */
++#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) ||              \
++    (defined(__cplusplus) && __cplusplus >= 201103L)
+ /* Minimum and maximum values a `signed long long int' can hold.  */
+ # undef LLONG_MIN
+ # define LLONG_MIN (-LLONG_MAX - 1LL)
+@@ -111,7 +115,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+ # define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+ #endif
+ 
+-#if defined (__GNU_LIBRARY__) ? defined (__USE_GNU) : !defined (__STRICT_ANSI__)
++/* LONG_LONG_MIN/LONG_LONG_MAX/ULONG_LONG_MAX are a GNU extension. Android's
++   bionic also defines them. It's too bad that we don't have something like
++   #pragma poison that could be used to deprecate a macro - the code should just
++   use LLONG_MAX and friends.
++ */
++#if (defined(__GNU_LIBRARY__) ? defined(__USE_GNU)                             \
++                              : !defined(__STRICT_ANSI__)) ||                  \
++    defined(__BIONIC__)
+ /* Minimum and maximum values a `signed long long int' can hold.  */
+ # undef LONG_LONG_MIN
+ # define LONG_LONG_MIN (-LONG_LONG_MAX - 1LL)
+-- 
+2.53.0
+
