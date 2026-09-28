@@ -90,7 +90,8 @@ jobs:
 
           if [[ ${{ matrix.target_abi }} == x86_64 ]]; then
             rm -rf ${{ github.workspace }}/libandroid-extra-build
-            cmake -B ${{ github.workspace }}/libandroid-extra-build \
+            cmake -S ${{ github.workspace }}/libandroid-extra-src \
+              -B ${{ github.workspace }}/libandroid-extra-build \
               -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
               -DANDROID_PLATFORM=android-21 -DANDROID_ABI=x86 \
               --toolchain /opt/ndk/build/cmake/android.toolchain.cmake \
