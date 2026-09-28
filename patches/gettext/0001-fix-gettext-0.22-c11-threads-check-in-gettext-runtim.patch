@@ -1,0 +1,119 @@
+From bf33af9ae39d84e9ef2b44169cc312a0b7a432e5 Mon Sep 17 00:00:00 2001
+From: yxj-github-437 <2457369732@qq.com>
+Date: Mon, 28 Sep 2026 23:50:16 +0800
+Subject: [PATCH] fix gettext-0.22 c11 threads check in gettext-runtime
+
+---
+ gettext-runtime/configure                        | 2 +-
+ gettext-runtime/gnulib-lib/mbrtowc.c             | 8 ++++++--
+ gettext-runtime/gnulib-lib/setlocale_null.c      | 8 ++++++--
+ gettext-runtime/intl/configure                   | 2 +-
+ gettext-runtime/intl/gnulib-lib/mbrtowc.c        | 8 ++++++--
+ gettext-runtime/intl/gnulib-lib/setlocale_null.c | 8 ++++++--
+ 6 files changed, 26 insertions(+), 10 deletions(-)
+
+diff --git a/gettext-runtime/configure b/gettext-runtime/configure
+index a5f6dbc..8258c01 100755
+--- a/gettext-runtime/configure
++++ b/gettext-runtime/configure
+@@ -32353,7 +32353,7 @@ printf "%s\n" "#define USE_ISOC_AND_POSIX_THREADS 1" >>confdefs.h
+ 
+ printf "%s\n" "#define USE_POSIX_THREADS 1" >>confdefs.h
+ 
+-          if test -z "$LIBMULTITHREAD" && test -z "$LTLIBMULTITHREAD"; then
++          if test -z "$LIBMULTITHREAD" && test -z "$LTLIBMULTITHREAD" || [[ "$host_os" == *-android* ]]; then
+ 
+ printf "%s\n" "#define USE_POSIX_THREADS_FROM_LIBC 1" >>confdefs.h
+ 
+diff --git a/gettext-runtime/gnulib-lib/mbrtowc.c b/gettext-runtime/gnulib-lib/mbrtowc.c
+index c1a689a..a31ced4 100644
+--- a/gettext-runtime/gnulib-lib/mbrtowc.c
++++ b/gettext-runtime/gnulib-lib/mbrtowc.c
+@@ -38,8 +38,12 @@
+ #  include <pthread.h>
+ #  if HAVE_THREADS_H && HAVE_WEAK_SYMBOLS
+ #   include <threads.h>
+-#   pragma weak thrd_exit
+-#   define c11_threads_in_use() (thrd_exit != NULL)
++#   if defined __ANDROID__ && __ANDROID_API__ < 30
++#     define c11_threads_in_use() 1
++#   else
++#     pragma weak thrd_exit
++#     define c11_threads_in_use() (thrd_exit != NULL)
++#   endif
+ #  else
+ #   define c11_threads_in_use() 0
+ #  endif
+diff --git a/gettext-runtime/gnulib-lib/setlocale_null.c b/gettext-runtime/gnulib-lib/setlocale_null.c
+index 89c8a06..8dd7ec3 100644
+--- a/gettext-runtime/gnulib-lib/setlocale_null.c
++++ b/gettext-runtime/gnulib-lib/setlocale_null.c
+@@ -40,8 +40,12 @@
+ #  include <pthread.h>
+ #  if HAVE_THREADS_H && HAVE_WEAK_SYMBOLS
+ #   include <threads.h>
+-#   pragma weak thrd_exit
+-#   define c11_threads_in_use() (thrd_exit != NULL)
++#   if defined __ANDROID__ && __ANDROID_API__ < 30
++#     define c11_threads_in_use() 1
++#   else
++#     pragma weak thrd_exit
++#     define c11_threads_in_use() (thrd_exit != NULL)
++#   endif
+ #  else
+ #   define c11_threads_in_use() 0
+ #  endif
+diff --git a/gettext-runtime/intl/configure b/gettext-runtime/intl/configure
+index e731116..1f1ab29 100755
+--- a/gettext-runtime/intl/configure
++++ b/gettext-runtime/intl/configure
+@@ -24397,7 +24397,7 @@ printf "%s\n" "#define USE_ISOC_AND_POSIX_THREADS 1" >>confdefs.h
+ 
+ printf "%s\n" "#define USE_POSIX_THREADS 1" >>confdefs.h
+ 
+-          if test -z "$LIBMULTITHREAD" && test -z "$LTLIBMULTITHREAD"; then
++          if test -z "$LIBMULTITHREAD" && test -z "$LTLIBMULTITHREAD" || [[ "$host_os" == *-android* ]]; then
+ 
+ printf "%s\n" "#define USE_POSIX_THREADS_FROM_LIBC 1" >>confdefs.h
+ 
+diff --git a/gettext-runtime/intl/gnulib-lib/mbrtowc.c b/gettext-runtime/intl/gnulib-lib/mbrtowc.c
+index c1a689a..a31ced4 100644
+--- a/gettext-runtime/intl/gnulib-lib/mbrtowc.c
++++ b/gettext-runtime/intl/gnulib-lib/mbrtowc.c
+@@ -38,8 +38,12 @@
+ #  include <pthread.h>
+ #  if HAVE_THREADS_H && HAVE_WEAK_SYMBOLS
+ #   include <threads.h>
+-#   pragma weak thrd_exit
+-#   define c11_threads_in_use() (thrd_exit != NULL)
++#   if defined __ANDROID__ && __ANDROID_API__ < 30
++#     define c11_threads_in_use() 1
++#   else
++#     pragma weak thrd_exit
++#     define c11_threads_in_use() (thrd_exit != NULL)
++#   endif
+ #  else
+ #   define c11_threads_in_use() 0
+ #  endif
+diff --git a/gettext-runtime/intl/gnulib-lib/setlocale_null.c b/gettext-runtime/intl/gnulib-lib/setlocale_null.c
+index 89c8a06..8dd7ec3 100644
+--- a/gettext-runtime/intl/gnulib-lib/setlocale_null.c
++++ b/gettext-runtime/intl/gnulib-lib/setlocale_null.c
+@@ -40,8 +40,12 @@
+ #  include <pthread.h>
+ #  if HAVE_THREADS_H && HAVE_WEAK_SYMBOLS
+ #   include <threads.h>
+-#   pragma weak thrd_exit
+-#   define c11_threads_in_use() (thrd_exit != NULL)
++#   if defined __ANDROID__ && __ANDROID_API__ < 30
++#     define c11_threads_in_use() 1
++#   else
++#     pragma weak thrd_exit
++#     define c11_threads_in_use() (thrd_exit != NULL)
++#   endif
+ #  else
+ #   define c11_threads_in_use() 0
+ #  endif
+-- 
+2.53.0
+

@@ -151,8 +151,26 @@ done
 
 ## download gcc dependence lib and patch
 cd $BASE_DIR/src/gcc-$GCC_VERSION; contrib/download_prerequisites || exit 1
-for i in `find $PROJECT_DIR/patches/gettext/ -name *.patch -type f`; do
-	patch -d $BASE_DIR/src/gcc-$GCC_VERSION/gettext -p1 < $i || exit 1
+
+
+GETTEXT_VERSION=$(basename $(echo $BASE_DIR/src/gcc-$GCC_VERSION/gettext-*.tar.gz) .tar.gz | awk -F- '{print $NF}')
+
+gettext_patches=()
+
+if version_eq $GETTEXT_VERSION "0.22"; then
+	gettext_patches=(
+		${gettext_patches[@]}
+		0001-fix-gettext-0.22-c11-threads-check-in-gettext-runtim.patch
+	)
+elif version_eq $GETTEXT_VERSION "1.0"; then
+	gettext_patches=(
+		${gettext_patches[@]}
+		0001-fix-c11-threads-check-in-gettext-runtim.patch
+	)
+fi
+
+for i in "${gettext_patches[@]}"; do
+	patch -d $BASE_DIR/src/gcc-$GCC_VERSION/gettext -p1 < $PROJECT_DIR/patches/gettext/$i || exit 1
 done
 
 ## set COMPILER FLAGS
