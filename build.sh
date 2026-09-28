@@ -165,7 +165,7 @@ if version_eq $GETTEXT_VERSION "0.22"; then
 elif version_eq $GETTEXT_VERSION "1.0"; then
 	gettext_patches=(
 		${gettext_patches[@]}
-		0001-fix-c11-threads-check-in-gettext-runtim.patch
+		0001-fix-c11-threads-check-in-gettext-runtime.patch
 	)
 fi
 
@@ -212,6 +212,10 @@ fi
 
 ## build
 mkdir -p $BASE_DIR/build; cd $BASE_DIR/build
+
+# use my libintl
+test x$($HOST-gcc -print-file-name=libintl.a) == x || rm $BASE_DIR/src/gcc-$GCC_VERSION/gettext
+
 export gcc_cv_objdump=llvm-objdump
 export ac_cv_func_ffsll=yes
 ../src/gcc-$GCC_VERSION/configure -v --host=$HOST --target=$TARGET --build=x86_64-linux-gnu --enable-default-pie --enable-host-pie --enable-languages=$ENABLE_LANGUAGES --with-system-zlib --with-system-zstd --with-target-system-zlib --enable-multilib --enable-multiarch \
